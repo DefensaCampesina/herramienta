@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Herramienta de lucha del campesinado · Seguimiento y veeduría</title>
+<link rel="stylesheet" href="estilo.css">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="marca">
+      <div class="ico">✊</div>
+      <div>
+        <div class="kicker">Movimiento campesino · Veeduría de la Reforma Agraria</div>
+        <h1>Herramienta de lucha del campesinado</h1>
+      </div>
+    </div>
+    <div class="der">
+      <select id="subBarra" class="sel-barra oculto"></select>
+      <span class="guardado" id="guardadoInd"></span>
+    </div>
+  </div>
+  <div class="barra-prog"><div id="prog"></div></div>
+</header>
+
+<div id="puerta" class="puerta">
+  <div class="puerta-caja">
+    <div class="puerta-ico">✊</div>
+    <h2>Herramienta del campesinado</h2>
+    <p>Esta herramienta es de las organizaciones campesinas. Escriba la clave que le
+       compartieron para entrar.</p>
+    <input id="pClave" type="password" placeholder="Clave" autocomplete="off">
+    <button class="btn grande" id="pEntrar">Entrar</button>
+    <p class="puerta-err" id="pErr"></p>
+    <p class="puerta-pie">Si no la tiene, pídala a la organización que le pasó el enlace.</p>
+  </div>
+</div>
+<main id="app"></main>
+
+<!-- ================= PASO 1 ================= -->
+<template id="tpl-inicio">
+  <div class="wrap estrecho">
+    <div class="intro">
+      <h2>Esta herramienta es del campesinado</h2>
+      <p class="lead">No es un informe para el escritorio de nadie. Es un instrumento de
+        <b>lucha, seguimiento y veeduría</b>: para tener claros los logros, saber quién responde
+        por cada uno, y <b>frenar la contrarreforma agraria</b> antes de que ocurra.</p>
+
+      <div class="proposito">
+        <div><span class="pe">📌</span><b>Dejar constancia</b>
+          <span>Lo que se ganó entre 2022 y 2026, con cifra y con norma. Lo que no queda escrito se puede negar.</span></div>
+        <div><span class="pe">👁️</span><b>Hacer veeduría</b>
+          <span>Saber qué falta y quién tiene que responder. El seguimiento es de las organizaciones, no del gobierno de turno.</span></div>
+        <div><span class="pe">🛡️</span><b>Frenar la contrarreforma</b>
+          <span>Marcar qué tan fácil se puede perder cada logro y encender alertas a tiempo.</span></div>
+      </div>
+
+      <div class="nota-entidades">
+        En la reforma agraria intervienen muchas entidades y cada una tiene su pedazo.
+        Por eso el trabajo está repartido en <b>8 subsistemas</b>: usted responde por el suyo,
+        y puede pasar a otro cuando quiera.
+      </div>
+    </div>
+
+    <div class="tarjeta">
+      <h3>¿De dónde viene esta información?</h3>
+      <p class="ayuda">Solo para saber a qué dependencia corresponde. No pedimos datos personales.</p>
+      <div class="dos">
+        <div class="campo"><label>Dependencia, dirección u organización <span class="req">*</span></label>
+          <input id="fDep" placeholder="Dirección de Ordenamiento Social de la Propiedad"></div>
+        <div class="campo"><label>Entidad <span class="req">*</span></label>
+          <input id="fEnt" list="lstEnt" placeholder="Agencia Nacional de Tierras">
+          <datalist id="lstEnt"></datalist></div>
+      </div>
+    </div>
+
+    <div class="tarjeta">
+      <h3>¿Sobre qué subsistema va a responder?</h3>
+      <p class="ayuda">Puede empezar por uno y después cambiar a otro sin perder nada.</p>
+      <select id="fSub" class="grande"><option value="">Elija un subsistema…</option></select>
+      <div id="infoSub"></div>
+    </div>
+
+    <div class="acciones">
+      <span class="ayuda" id="avisoRetomar"></span>
+      <button class="btn grande" id="btnEmpezar">Entrar →</button>
+    </div>
+  </div>
+</template>
+
+<!-- ================= PASO 2 ================= -->
+<template id="tpl-matriz">
+  <div class="wrap ancho">
+    <div class="cab">
+      <div>
+        <div class="mig" id="mig"></div>
+        <h2 id="tituloSub"></h2>
+      </div>
+      <div class="cab-btns">
+        <button class="btn plano chico" id="btnAtras">← Cambiar</button>
+        <button class="btn" id="btnEnviar">Enviar ✓</button>
+      </div>
+    </div>
+
+    <div class="leyenda-tabla">
+      <span><b>Llene solo lo que sepa.</b></span><span class="sep">·</span>
+      <span>Se guarda solo mientras escribe.</span><span class="sep">·</span>
+      <span>Puede cambiar de subsistema arriba y volver.</span><span class="sep">·</span>
+      <span>Cada línea admite <b>varios indicadores</b>.</span>
+    </div>
+
+    <div class="tabla-caja"><table class="mtx" id="tabla"></table></div>
+
+    <div class="pie-tabla">
+      <button class="btn-agregar" id="btnAgregar">＋ Falta una línea que sí trabajamos — agregarla</button>
+    </div>
+
+    <div class="acciones">
+      <span class="ayuda" id="estadoLlenado"></span>
+      <button class="btn grande" id="btnEnviar2">Enviar ✓</button>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-fin">
+  <div class="wrap estrecho"><div class="fin" id="finCuerpo"></div></div>
+</template>
+
+<!-- territorio -->
+<div id="modal" class="modal oculto">
+  <div class="modal-caja">
+    <div class="modal-cab"><h3 id="modalTit">¿Dónde?</h3><button id="modalX">✕</button></div>
+    <div class="modal-cuerpo" id="modalCuerpo"></div>
+    <div class="modal-pie"><button class="btn" id="modalOk">Listo</button></div>
+  </div>
+</div>
+
+<!-- alertas -->
+<div id="modalAl" class="modal oculto">
+  <div class="modal-caja">
+    <div class="modal-cab"><h3>Alerta del territorio</h3><button id="modalAlX">✕</button></div>
+    <div class="modal-cuerpo" id="modalAlCuerpo"></div>
+    <div class="modal-pie"><button class="btn" id="modalAlOk">Listo</button></div>
+  </div>
+</div>
+
+<script src="puerta.js"></script>
+<script src="app.js" defer></script>
+</body>
+</html>
