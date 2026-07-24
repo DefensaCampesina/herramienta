@@ -1,5 +1,5 @@
 const CONFIG = {
-endpoint: '',
+endpoint: 'https://script.google.com/macros/s/AKfycbx0iwLCC6QnUuok2-2ZGptW6jI2dvN1e53wT6mFECSsYKklprFqGps3xlOaRRbv3rdi/exec',
 token: 'campesina-2026'
 };
 let D = null, AL = null;
