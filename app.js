@@ -155,13 +155,13 @@ return filas;
 $('#tabla').innerHTML = `
 <thead><tr>
 <th style="min-width:205px">Línea estratégica</th>
-<th style="min-width:145px">¿Cómo estaba el campesinado en 2022?<small>escoja</small></th>
+<th style="min-width:145px">¿Cómo estaba en 2022?<small>escoja</small></th>
 <th style="min-width:335px">Indicadores<small>puede agregar varios por línea</small></th>
 <th style="min-width:210px">Logros<small>escriba</small></th>
 <th style="min-width:130px">¿Se cumplió?<small>escoja</small></th>
 <th style="min-width:160px">¿Con qué norma o programa?<small>escoja y precise</small></th>
 <th style="min-width:120px">¿Dónde?<small>clic para elegir</small></th>
-<th style="min-width:195px">¿Qué le falta al campesinado?<small>escriba</small></th>
+<th style="min-width:195px">¿Qué falta por garantizar?<small>escriba</small></th>
 <th style="min-width:150px">¿Qué tan fácil se puede perder?<small>escoja</small></th>
 <th style="min-width:135px">Alerta<small>clic para marcar</small></th>
 <th style="min-width:135px">¿De dónde sale la cifra?<small>escriba</small></th>
@@ -257,7 +257,7 @@ barraSub();
 }
 function abrirTerritorio(id){
 S.modalLinea = id; S.depAbierto = '';
-$('#modalTit').textContent = '¿Dónde le cambió al campesinado?';
+$('#modalTit').textContent = '¿En qué territorio?';
 $('#modal').classList.remove('oculto');
 pintarModal();
 const cerrar = ()=>{
@@ -438,7 +438,7 @@ function pFin(){
 if(S.enviado){
 $('#finCuerpo').innerHTML = `<div class="emo">✓</div>
 <h2>Recibido. Gracias.</h2>
-<p>Llegaron <b>${S.enviadas} registros</b>. Esto queda como constancia del campesinado.</p>
+<p>Llegaron <b>${S.enviadas} registros</b>. Quedan como constancia.</p>
 <div class="caja">
 <p style="margin:0 0 8px"><b>¿Para qué sirve lo que acaba de registrar?</b></p>
 <p style="margin:0">Alimenta el tablero territorial: cada logro con su cifra, su norma y su lugar.

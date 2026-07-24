@@ -1,8 +1,8 @@
-# Veeduría de los derechos del campesinado
+# Derechos de los sujetos populares del campo y de la Reforma Agraria
 
 Es un instrumento de seguimiento y veeduría que sistematiza los avances alcanzados, identifica
-alertas tempranas y monitorea riesgos y amenazas para la garantía de los derechos del
-campesinado. Permite documentar el estado de implementación de los compromisos, asignar
+alertas tempranas y monitorea riesgos y amenazas para la garantía de los derechos de los sujetos
+populares del campo. Permite documentar el estado de implementación de los compromisos, asignar
 responsabilidades y facilitar el control social sobre las políticas agrarias.
 
 El trabajo está repartido en los ocho subsistemas del Sistema Nacional de Reforma Agraria y
