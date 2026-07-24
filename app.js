@@ -434,6 +434,28 @@ if(!r.ok) throw new Error('el servidor respondió '+r.status);
 S.enviado=true; S.enviadas=p.filas.length; localStorage.removeItem(LLAVE); ir('fin');
 }catch(e){ S.enviado=false; S.errorEnvio=e.message; ir('fin'); }
 }
+const COLS_CSV = ['recibido','dependencia','entidad','subsistema','linea','linea_agregada',
+'situacion_2022','indicador','indicador_tipo','valor','unidad','fecha_corte',
+'logros','estado','tipo_instrumento','instrumento','donde','que_falta','fragilidad',
+'alerta_nivel','alerta_tipo','alerta_verif','alerta_nota','fuente','observaciones'];
+function csvDe(p){
+const q = v => '"'+String(v ?? '').replace(/"/g,'""').replace(/[\r\n]+/g,' ')+'"';
+const base = { recibido:p.recibido, dependencia:p.id.dep, entidad:p.id.ent,
+subsistema:p.subsistema_nombre || p.subsistema };
+const cuerpo = p.filas.map(f => COLS_CSV.map(c =>
+q(f[c]!==undefined && f[c]!=='' ? f[c] : (base[c] ?? ''))).join(';')).join('\n');
+return '﻿' + COLS_CSV.join(';') + '\n' + cuerpo + '\n';   // BOM: Excel abre bien las tildes
+}
+function descargarRespuestas(){
+const p = paquete();
+if(!p.filas.length){ alert('Todavía no hay ninguna línea diligenciada.'); return; }
+const limpio = s => String(s||'').replace(/[^\wáéíóúñÁÉÍÓÚÑ ]/gi,'').trim().slice(0,40) || 'dependencia';
+const a = document.createElement('a');
+a.href = URL.createObjectURL(new Blob([csvDe(p)], {type:'text/csv;charset=utf-8'}));
+a.download = `Veeduria_S${p.subsistema}_${limpio(p.id.dep)}.csv`;
+document.body.appendChild(a); a.click();
+setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
 function pFin(){
 if(S.enviado){
 $('#finCuerpo').innerHTML = `<div class="emo">✓</div>
@@ -448,13 +470,24 @@ Es lo que permite defenderlo cuando intenten revertirlo.</p>
 <button class="btn plano" id="btnOtro">Registrar otra dependencia</button></div>`;
 $('#btnOtro').onclick = ()=>{ S.r={}; S.extra={}; S.sub=0; S.enviado=false; guardar(); ir('inicio'); };
 } else {
+const sinReceptor = /\b40[45]\b/.test(S.errorEnvio||'');
 $('#finCuerpo').innerHTML = `<div class="emo">⚠️</div>
-<h2>No se pudo enviar</h2>
-<p>Sus respuestas <b>siguen guardadas</b>: no se perdió nada.</p>
-<div class="err"><b>Detalle:</b> ${esc(S.errorEnvio||'')}</div>
-<div class="acciones" style="justify-content:center;margin-top:20px">
-<button class="btn" id="btnReintentar">Intentar de nuevo</button>
-<button class="btn plano" id="btnVolver">Volver a la tabla</button></div>`;
+<h2>${sinReceptor ? 'El envío automático todavía no está habilitado' : 'No se pudo enviar'}</h2>
+<p>Su información <b>no se perdió</b>: quedó guardada en este navegador y sigue ahí
+aunque cierre la página.</p>
+<div class="caja" style="text-align:left">
+<p style="margin:0 0 8px"><b>Qué hacer ahora</b></p>
+<p style="margin:0 0 6px">Descargue sus respuestas con el botón de abajo y envíelas por correo
+a quien le compartió el enlace. El archivo abre en Excel y ya trae las columnas listas.</p>
+<p style="margin:0">Cuando el envío quede habilitado, también puede volver a entrar
+desde este mismo equipo y darle <b>Intentar de nuevo</b>: lo que escribió sigue cargado.</p>
+</div>
+<div class="acciones" style="justify-content:center;margin-top:20px;flex-wrap:wrap">
+<button class="btn" id="btnBajar">⬇ Descargar mis respuestas</button>
+<button class="btn plano" id="btnReintentar">Intentar de nuevo</button>
+<button class="btn plano" id="btnVolver">Volver a la tabla</button></div>
+<p class="ayuda" style="margin-top:16px">Detalle técnico: ${esc(S.errorEnvio||'')}</p>`;
+$('#btnBajar').onclick = descargarRespuestas;
 $('#btnReintentar').onclick = enviar;
 $('#btnVolver').onclick = ()=>ir('matriz');
 }
