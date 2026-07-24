@@ -436,7 +436,7 @@ S.enviado=true; S.enviadas=p.filas.length; localStorage.removeItem(LLAVE); ir('f
 }
 function pFin(){
 if(S.enviado){
-$('#finCuerpo').innerHTML = `<div class="emo">✊</div>
+$('#finCuerpo').innerHTML = `<div class="emo">✓</div>
 <h2>Recibido. Gracias.</h2>
 <p>Llegaron <b>${S.enviadas} registros</b>. Esto queda como constancia del campesinado.</p>
 <div class="caja">

@@ -1,27 +1,21 @@
-# Herramienta de lucha del campesinado
+# Veeduría de los derechos del campesinado
 
-Instrumento de **seguimiento, veeduría y alerta temprana** sobre la reforma agraria, para las
-organizaciones campesinas.
+Es un instrumento de seguimiento y veeduría que sistematiza los avances alcanzados, identifica
+alertas tempranas y monitorea riesgos y amenazas para la garantía de los derechos del
+campesinado. Permite documentar el estado de implementación de los compromisos, asignar
+responsabilidades y facilitar el control social sobre las políticas agrarias.
 
-No es un informe de gestión. Sirve para tres cosas:
-
-- **Dejar constancia** de lo que se ganó entre 2022 y 2026, con cifra y con norma.
-- **Hacer veeduría**: qué falta y quién tiene que responder.
-- **Frenar la contrarreforma agraria**: marcar qué tan fácil se puede perder cada logro y
-  encender alertas a tiempo.
-
-El trabajo está repartido en los **8 subsistemas** del Sistema Nacional de Reforma Agraria y
-Desarrollo Rural (Decreto 1406 de 2023), porque en la reforma agraria intervienen muchas
-entidades y cada una responde por su pedazo.
+El trabajo está repartido en los ocho subsistemas del Sistema Nacional de Reforma Agraria y
+Desarrollo Rural (Decreto 1406 de 2023). Cada quien responde por el suyo y puede pasar a otro
+cuando quiera.
 
 ## Cómo se entra
 
-La herramienta pide una clave. La reparten las organizaciones; no se publica en el enlace.
+Pide una clave, que se comparte por separado del enlace.
 
 ## Sobre los datos
 
 - **No se piden datos personales**: ni nombre ni correo. Solo la dependencia u organización.
-- Lo que se escribe queda en el navegador de quien llena mientras diligencia y **se borra al enviar**.
+- Lo que se escribe queda en el navegador de quien diligencia y **se borra al enviar**.
 - Las alertas **no admiten nombres de personas**. Se describe el hecho y cuántas personas, no quién.
-- El contenido de la herramienta va cifrado (AES-256-GCM). Clonar este repositorio sin la clave
-  no entrega los datos.
+- El contenido va cifrado (AES-256-GCM). Clonar este repositorio sin la clave no entrega los datos.
