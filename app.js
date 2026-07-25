@@ -26,6 +26,21 @@ fragilidad: ['Muy fácil — basta una firma o un cambio de resolución',
 'Todavía no se sabe'],
 tipo_ind: ['Numérico','Cualitativo']
 };
+const POBLACION = [
+{ grupo: 'Sujetos', op: [
+'Campesinado',
+'Comunidades indígenas',
+'Comunidades negras / afrocolombianas',
+'Raizales',
+'Palenqueros',
+'Pueblo Rrom (gitano)',
+'Pescadores artesanales' ] },
+{ grupo: 'Enfoques', op: [
+'Mujeres rurales',
+'Jóvenes rurales',
+'Víctimas del conflicto armado',
+'Personas en reincorporación' ] }
+];
 const fuente = window.__CARGA__ ? window.__CARGA__()
 : Promise.all([
 fetch('datos.json').then(r=>r.json()),
@@ -52,11 +67,13 @@ const subActual = () => arr(D.subsistemas).find(s=>s.n===S.sub);
 function resp(id){
 if(!S.r[id]) S.r[id] = { situacion_2022:'', logros:'', estado:'', indicadores:[],
 tipo_instrumento:'', instrumento:'', que_falta:'', fragilidad:'', fuente:'', observaciones:'',
-terr:'', dptos:[], mpios:[], alerta_nivel:'', alerta_tipo:'', alerta_nota:'', alerta_verif:'' };
+terr:'', dptos:[], mpios:[], poblacion:[],
+alerta_nivel:'', alerta_tipo:'', alerta_nota:'', alerta_verif:'' };
 const r = S.r[id];
 if(!Array.isArray(r.indicadores)) r.indicadores=[];
 if(!Array.isArray(r.dptos)) r.dptos=[];
 if(!Array.isArray(r.mpios)) r.mpios=[];
+if(!Array.isArray(r.poblacion)) r.poblacion=[];
 return r;
 }
 const lleno = id => { const r=S.r[id];
@@ -142,6 +159,7 @@ h += td(`${sel('tipo_instrumento', OPC.tipo_instrumento, l.id)}
 placeholder="${r.tipo_instrumento==='Otro'?'¿cuál? escríbalo':'888 de 2025'}"
 value="${esc(r.instrumento)}" style="margin-top:4px">`);
 h += td(`<button class="btn-terr ${resumenTerr(r)?'puesto':''}" data-terr="${l.id}">${esc(resumenTerr(r)||'+ elegir')}</button>`);
+h += td(`<button class="btn-pob ${r.poblacion.length?'puesto':''}" data-pob="${l.id}">${esc(resumenPob(r)||'+ elegir')}</button>`);
 h += td(`<textarea data-id="${l.id}" data-f="que_falta" placeholder="Ej: faltan recursos para los demás municipios">${esc(r.que_falta)}</textarea>`);
 h += td(sel('fragilidad', OPC.fragilidad, l.id));
 h += td(`<button class="btn-alerta ${esc(r.alerta_nivel)}" data-al="${l.id}">${esc(resumenAlerta(r)||'+ alerta')}</button>`);
@@ -161,6 +179,7 @@ $('#tabla').innerHTML = `
 <th style="min-width:130px">¿Se cumplió?<small>escoja</small></th>
 <th style="min-width:160px">¿Con qué norma o programa?<small>escoja y precise</small></th>
 <th style="min-width:120px">¿Dónde?<small>clic para elegir</small></th>
+<th style="min-width:150px">Población beneficiaria<small>clic para marcar</small></th>
 <th style="min-width:195px">¿Qué falta por garantizar?<small>escriba</small></th>
 <th style="min-width:150px">¿Qué tan fácil se puede perder?<small>escoja</small></th>
 <th style="min-width:135px">Alerta<small>clic para marcar</small></th>
@@ -225,6 +244,7 @@ const r = resp(b.dataset.quitarInd);
 r.indicadores.splice(+b.dataset.j, 1); guardar(); pMatriz();
 });
 $$('[data-terr]').forEach(b=>b.onclick=()=>abrirTerritorio(b.dataset.terr));
+$$('[data-pob]').forEach(b=>b.onclick=()=>abrirPoblacion(b.dataset.pob));
 $$('[data-al]').forEach(b=>b.onclick=()=>abrirAlerta(b.dataset.al));
 $$('[data-quitar]').forEach(b=>b.onclick=()=>{
 S.extra[S.sub] = arr(S.extra[S.sub]).filter(x=>x.id!==b.dataset.quitar);
@@ -391,6 +411,44 @@ const na=$('#alNota'); if(na) na.oninput=()=>{ r.alerta_nota=na.value; guardar()
 const q=$('#alQuitar'); if(q) q.onclick=()=>{
 r.alerta_nivel=''; r.alerta_tipo=''; r.alerta_nota=''; r.alerta_verif=''; guardar(); pintarAlerta(); };
 }
+function abrirPoblacion(id){
+S.modalLinea = id;
+$('#modalPob').classList.remove('oculto');
+pintarPoblacion();
+const cerrar = ()=>{
+$('#modalPob').classList.add('oculto');
+const b = $(`[data-pob="${id}"]`), r = resp(id);
+if(b){ b.textContent = resumenPob(r) || '+ elegir';
+b.classList.toggle('puesto', !!r.poblacion.length); }
+marcarFila(id); guardar(); estado();
+};
+$('#modalPobX').onclick = $('#modalPobOk').onclick = cerrar;
+}
+function pintarPoblacion(){
+const r = resp(S.modalLinea);
+$('#modalPobCuerpo').innerHTML = `
+<p class="ayuda" style="margin-top:0">Marque <b>a quién beneficia</b> esta línea. Puede marcar
+varias. Sirve para segmentar la información en la siguiente fase.</p>
+${POBLACION.map(g=>`
+<div class="pob-grupo">${esc(g.grupo)}</div>
+<div class="pob-lista">${g.op.map(o=>`
+<label class="pob-op ${r.poblacion.includes(o)?'on':''}">
+<input type="checkbox" data-pob-op="${esc(o)}" ${r.poblacion.includes(o)?'checked':''}>
+<span>${esc(o)}</span></label>`).join('')}</div>`).join('')}`;
+$$('#modalPobCuerpo [data-pob-op]').forEach(c=>c.onchange=()=>{
+const o = c.dataset.pobOp;
+if(c.checked){ if(!r.poblacion.includes(o)) r.poblacion.push(o); }
+else r.poblacion = r.poblacion.filter(x=>x!==o);
+c.closest('.pob-op').classList.toggle('on', c.checked);
+guardar();
+});
+}
+function resumenPob(r){
+const n = r.poblacion.length;
+if(!n) return '';
+if(n===1) return r.poblacion[0];
+return `${n} poblaciones`;
+}
 function resumenAlerta(r){
 if(!r.alerta_nivel) return '';
 const tipos = AL?.tipos || [];
@@ -411,7 +469,8 @@ const comun = { dependencia:S.id.dep, entidad:S.id.ent,
 subsistema:`${s.n}. ${s.nombre}`, linea:l.linea, linea_agregada: l.propia?'Sí':'No',
 situacion_2022:r.situacion_2022, logros:r.logros, estado:r.estado,
 tipo_instrumento:r.tipo_instrumento, instrumento:r.instrumento,
-donde:territorioTexto(r), que_falta:r.que_falta, fragilidad:r.fragilidad,
+donde:territorioTexto(r), poblacion:(r.poblacion||[]).join('; '),
+que_falta:r.que_falta, fragilidad:r.fragilidad,
 alerta_nivel:r.alerta_nivel, alerta_tipo:r.alerta_tipo, alerta_verif:r.alerta_verif, alerta_nota:r.alerta_nota,
 fuente:r.fuente, observaciones:r.observaciones };
 if(inds.length) inds.forEach(i=>filas.push({...comun,
@@ -420,7 +479,7 @@ else filas.push({...comun, indicador:'', indicador_tipo:'', valor:'', unidad:'',
 });
 });
 return { recibido:new Date().toISOString(), token:CONFIG.token, id:S.id,
-subsistema:S.sub, subsistema_nombre:subActual()?.nombre, filas };
+subsistema:S.sub, subsistema_nombre:subActual()?.nombre, cols:COLS_CSV, filas };
 }
 async function enviar(){
 const p = paquete();
@@ -436,7 +495,7 @@ S.enviado=true; S.enviadas=p.filas.length; localStorage.removeItem(LLAVE); ir('f
 }
 const COLS_CSV = ['recibido','dependencia','entidad','subsistema','linea','linea_agregada',
 'situacion_2022','indicador','indicador_tipo','valor','unidad','fecha_corte',
-'logros','estado','tipo_instrumento','instrumento','donde','que_falta','fragilidad',
+'logros','estado','tipo_instrumento','instrumento','donde','poblacion','que_falta','fragilidad',
 'alerta_nivel','alerta_tipo','alerta_verif','alerta_nota','fuente','observaciones'];
 function csvDe(p){
 const q = v => '"'+String(v ?? '').replace(/"/g,'""').replace(/[\r\n]+/g,' ')+'"';
