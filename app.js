@@ -134,41 +134,32 @@ ${opciones.map(o=>`<option ${v===o?'selected':''}>${esc(o)}</option>`).join('')}
 };
 const cuerpo = L.map((l,k)=>{
 const r = resp(l.id);
-const inds = r.indicadores.length ? r.indicadores : [null];   // siempre al menos una fila
-const n = inds.length;
-const td = (html, cls='') => `<td rowspan="${n}" class="${cls}">${html}</td>`;
-const filas = inds.map((ind, j) => {
-const esPrim = j === 0;
-const clsFila = `${lleno(l.id)?'completa':''} ${l.propia?'propia':''} ${n>1 ? (j===n-1?'ult-sub':'sub') : ''}`;
-let h = `<tr class="${clsFila}" ${esPrim?`data-fila="${l.id}"`:''}>`;
-if (esPrim) {
-h += td(`<div class="num-lin">${l.propia?'<span class="etq-propia">AGREGADA</span>':'LÍNEA '+(k+1)}${lleno(l.id)?' <span class="marca-ok">✓</span>':''}
+const inds = r.indicadores.length ? r.indicadores : [null];
+const indHTML = inds.map((ind, j)=>`<div class="ind-item">${filaIndicador(l.id, ind, j)}</div>`).join('');
+const clsFila = `${lleno(l.id)?'completa':''} ${l.propia?'propia':''}`;
+return `<tr class="${clsFila}" data-fila="${l.id}">
+<td class="lin"><div class="num-lin">${l.propia?'<span class="etq-propia">AGREGADA</span>':'LÍNEA '+(k+1)}${lleno(l.id)?' <span class="marca-ok">✓</span>':''}
 ${l.propia?`<button class="quitar-lin" data-quitar="${l.id}" title="Quitar">✕</button>`:''}</div>
 ${l.propia
 ? `<textarea data-id="${l.id}" data-f="__linea" class="txt-lin" placeholder="Escriba la línea">${esc(l.linea)}</textarea>`
-: `<div class="txt-lin">${esc(l.linea)}</div>`}`, 'lin');
-h += td(sel('situacion_2022', OPC.situacion_2022, l.id));
-}
-h += `<td class="celda-ind">${filaIndicador(l.id, ind, j)}
-${j===n-1 ? `<button class="btn-ind" data-mas-ind="${l.id}">＋ agregar indicador</button>` : ''}</td>`;
-if (esPrim) {
-h += td(`<textarea data-id="${l.id}" data-f="logros" placeholder="Ej: 1.200 familias campesinas con título">${esc(r.logros)}</textarea>`);
-h += td(sel('estado', OPC.estado, l.id));
-h += td(`${sel('tipo_instrumento', OPC.tipo_instrumento, l.id)}
+: `<div class="txt-lin">${esc(l.linea)}</div>`}</td>
+<td>${sel('situacion_2022', OPC.situacion_2022, l.id)}</td>
+<td class="celda-ind"><div class="inds-lista">${indHTML}</div>
+<button class="btn-ind" data-mas-ind="${l.id}">＋ agregar indicador</button></td>
+<td><textarea data-id="${l.id}" data-f="logros" placeholder="Ej: 1.200 familias campesinas con título">${esc(r.logros)}</textarea></td>
+<td>${sel('estado', OPC.estado, l.id)}</td>
+<td>${sel('tipo_instrumento', OPC.tipo_instrumento, l.id)}
 <input data-id="${l.id}" data-f="instrumento" list="lstInst"
 placeholder="${r.tipo_instrumento==='Otro'?'¿cuál? escríbalo':'888 de 2025'}"
-value="${esc(r.instrumento)}" style="margin-top:4px">`);
-h += td(`<button class="btn-terr ${resumenTerr(r)?'puesto':''}" data-terr="${l.id}">${esc(resumenTerr(r)||'+ elegir')}</button>`);
-h += td(`<button class="btn-pob ${r.poblacion.length?'puesto':''}" data-pob="${l.id}">${esc(resumenPob(r)||'+ elegir')}</button>`);
-h += td(`<textarea data-id="${l.id}" data-f="que_falta" placeholder="Ej: faltan recursos para los demás municipios">${esc(r.que_falta)}</textarea>`);
-h += td(sel('fragilidad', OPC.fragilidad, l.id));
-h += td(`<button class="btn-alerta ${esc(r.alerta_nivel)}" data-al="${l.id}">${esc(resumenAlerta(r)||'+ alerta')}</button>`);
-h += td(`<input data-id="${l.id}" data-f="fuente" placeholder="Tablero ANT, hoja 12" value="${esc(r.fuente)}">`);
-h += td(`<textarea data-id="${l.id}" data-f="observaciones" placeholder="Aclaraciones, salvedades">${esc(r.observaciones)}</textarea>`);
-}
-return h + '</tr>';
-}).join('');
-return filas;
+value="${esc(r.instrumento)}" style="margin-top:4px"></td>
+<td><button class="btn-terr ${resumenTerr(r)?'puesto':''}" data-terr="${l.id}">${esc(resumenTerr(r)||'+ elegir')}</button></td>
+<td><button class="btn-pob ${r.poblacion.length?'puesto':''}" data-pob="${l.id}">${esc(resumenPob(r)||'+ elegir')}</button></td>
+<td><textarea data-id="${l.id}" data-f="que_falta" placeholder="Ej: faltan recursos para los demás municipios">${esc(r.que_falta)}</textarea></td>
+<td>${sel('fragilidad', OPC.fragilidad, l.id)}</td>
+<td><button class="btn-alerta ${esc(r.alerta_nivel)}" data-al="${l.id}">${esc(resumenAlerta(r)||'+ alerta')}</button></td>
+<td><input data-id="${l.id}" data-f="fuente" placeholder="Tablero ANT, hoja 12" value="${esc(r.fuente)}"></td>
+<td><textarea data-id="${l.id}" data-f="observaciones" placeholder="Aclaraciones, salvedades">${esc(r.observaciones)}</textarea></td>
+</tr>`;
 }).join('');
 $('#tabla').innerHTML = `
 <thead><tr>
