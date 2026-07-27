@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Defensa del Campesinado</title>
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+
+<div class="barra">
+  <div class="barra-in">
+    <div class="logo">
+      <div class="ico">🌾</div>
+      <div>
+        <div class="sub">Reforma Agraria · Revolución por la Vida</div>
+        <h1>Defensa del Campesinado</h1>
+      </div>
+    </div>
+    <nav class="navtabs">
+      <button class="navtab on" data-v="territorio">🗺️ Territorio</button>
+      <button class="navtab" data-v="subsistemas">🧩 Subsistemas</button>
+      <button class="navtab" data-v="veeduria">📋 Veeduría</button>
+      <button class="navtab" data-v="balance">📊 Qué se hizo y qué no</button>
+      <button class="navtab" data-v="defensa">🛡️ Defensa</button>
+    </nav>
+    <div class="der"><span class="corte" id="corte">—</span></div>
+  </div>
+</div>
+
+<div class="app">
+  <aside class="rail">
+    <div id="ctxBox" class="ctx"></div>
+
+    <h5>Territorialidades campesinas</h5>
+    <div class="slicer" id="slTerr"></div>
+
+    <h5>Otras figuras</h5>
+    <div class="slicer" id="slOtras"></div>
+
+    <h5>Ubicación</h5>
+    <select id="selRegion"></select>
+    <select id="selDpto"></select>
+    <select id="selMpio"></select>
+    <button class="limpiar" id="limpiar">↺ Ver todo el país</button>
+
+    <h5>Subsistema</h5>
+    <div class="slicer" id="slSub"></div>
+  </aside>
+
+  <main class="lienzo">
+    <div id="vistas"></div>
+  </main>
+</div>
+
+<button id="fab" title="Consultar la reforma agraria">🤖</button>
+<div id="panelAgente" class="card agente-flotante oculto">
+  <header><h3>🤖 Consulta la reforma agraria</h3>
+    <button id="cerrarAgente" style="color:var(--gris);font-size:16px">✕</button></header>
+  <div class="body">
+    <div class="chat" id="chat"></div>
+    <div class="preg"><input id="txtPregunta" placeholder="Escribe tu pregunta…" autocomplete="off">
+      <button id="btnPreguntar">Enviar</button></div>
+    <div class="sugs" id="sugs"></div>
+  </div>
+</div>
+
+<div class="tip" id="tip"></div>
+
+<script src="agente.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
