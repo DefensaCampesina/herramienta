@@ -481,8 +481,8 @@ try{
 const r = await fetch(CONFIG.endpoint || '/enviar', { method:'POST',
 headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(p) });
 if(!r.ok) throw new Error('el servidor respondió '+r.status);
-S.enviado=true; S.enviadas=p.filas.length; localStorage.removeItem(LLAVE); ir('fin');
-}catch(e){ S.enviado=false; S.errorEnvio=e.message; ir('fin'); }
+S.enviado=true; S.enviadas=p.filas.length; S.paqueteEnviado=p; localStorage.removeItem(LLAVE); ir('fin');
+}catch(e){ S.enviado=false; S.errorEnvio=e.message; S.paqueteEnviado=p; ir('fin'); }
 }
 const COLS_CSV = ['recibido','dependencia','entidad','subsistema','linea','linea_agregada',
 'situacion_2022','indicador','indicador_tipo','valor','unidad','fecha_corte',
@@ -499,26 +499,96 @@ return '﻿' + COLS_CSV.join(';') + '\n' + cuerpo + '\n';   // BOM: Excel abre b
 function descargarRespuestas(){
 const p = paquete();
 if(!p.filas.length){ alert('Todavía no hay ninguna línea diligenciada.'); return; }
-const limpio = s => String(s||'').replace(/[^\wáéíóúñÁÉÍÓÚÑ ]/gi,'').trim().slice(0,40) || 'dependencia';
+bajarArchivo(csvDe(p), nombreArchivo(p,'csv'), 'text/csv;charset=utf-8');
+}
+const limpioNom = s => String(s||'').replace(/[^\wáéíóúñÁÉÍÓÚÑ ]/gi,'').trim().slice(0,40) || 'dependencia';
+const nombreArchivo = (p,ext) => `Constancia_${limpioNom(p.id.dep)}.${ext}`;
+function bajarArchivo(contenido, nombre, tipo){
 const a = document.createElement('a');
-a.href = URL.createObjectURL(new Blob([csvDe(p)], {type:'text/csv;charset=utf-8'}));
-a.download = `Veeduria_S${p.subsistema}_${limpio(p.id.dep)}.csv`;
-document.body.appendChild(a); a.click();
+a.href = URL.createObjectURL(new Blob([contenido], {type:tipo}));
+a.download = nombre; document.body.appendChild(a); a.click();
 setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+function constanciaHTML(p){
+const fecha = (()=>{ try{ return new Date(p.recibido).toLocaleString('es-CO'); }catch(e){ return p.recibido||''; } })();
+const grupos = {};
+(p.filas||[]).forEach(f=>{
+const k = (f.subsistema||'')+'¬'+(f.linea||'');
+if(!grupos[k]) grupos[k] = {...f, indicadores:[]};
+if(f.indicador||f.valor) grupos[k].indicadores.push(
+{nombre:f.indicador,valor:f.valor,unidad:f.unidad,corte:f.fecha_corte});
+});
+const campo = (et,v)=> v ? `<div class="cp"><span class="et">${esc(et)}</span><span class="vl">${esc(v)}</span></div>` : '';
+const bloques = Object.values(grupos).map(g=>`
+<section class="linea">
+<div class="sub">${esc(g.subsistema)}</div>
+<h3>${esc(g.linea)}</h3>
+${g.indicadores.length?`<table class="ind"><thead><tr><th>Indicador</th><th>Valor</th><th>Unidad</th><th>Corte</th></tr></thead>
+<tbody>${g.indicadores.map(x=>`<tr><td>${esc(x.nombre)}</td><td>${esc(x.valor)}</td><td>${esc(x.unidad)}</td><td>${esc(x.corte)}</td></tr>`).join('')}</tbody></table>`:''}
+${campo('Cómo estaba en 2022',g.situacion_2022)}
+${campo('Logros',g.logros)}
+${campo('¿Se cumplió?',g.estado)}
+${campo('Norma o programa',[g.tipo_instrumento,g.instrumento].filter(Boolean).join(': '))}
+${campo('¿Dónde?',g.donde)}
+${campo('Población beneficiaria',g.poblacion)}
+${campo('Qué falta',g.que_falta)}
+${campo('Qué tan fácil se puede perder',g.fragilidad)}
+${campo('Alerta',[g.alerta_nivel,g.alerta_tipo,g.alerta_nota].filter(Boolean).join(' · '))}
+${campo('Fuente',g.fuente)}
+${campo('Observaciones',g.observaciones)}
+</section>`).join('');
+return `<!doctype html><html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Constancia — ${esc(p.id.dep||'')}</title>
+<style>
+body{font-family:"Segoe UI",system-ui,Arial,sans-serif;color:#1d1618;max-width:820px;margin:0 auto;padding:26px;line-height:1.5}
+.top{border-bottom:3px solid #8E1218;padding-bottom:14px;margin-bottom:18px}
+.top .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8E1218;font-weight:700}
+h1{font-size:20px;margin:4px 0 12px;color:#5E0B10}
+.meta{font-size:13px;color:#555} .meta b{color:#1d1618}
+.linea{border:1px solid #e8dfe0;border-left:4px solid #8E1218;border-radius:9px;padding:13px 15px;margin:12px 0;page-break-inside:avoid}
+.linea .sub{font-size:11px;font-weight:700;color:#8E1218;text-transform:uppercase;letter-spacing:.03em}
+.linea h3{font-size:15px;margin:3px 0 9px;color:#5E0B10}
+table.ind{width:100%;border-collapse:collapse;margin:6px 0 10px;font-size:12.5px}
+table.ind th{background:#8E1218;color:#fff;text-align:left;padding:5px 8px;font-size:11px}
+table.ind td{border-bottom:1px solid #eee;padding:5px 8px}
+.cp{display:flex;gap:10px;padding:3px 0;font-size:13px}
+.cp .et{flex:0 0 190px;color:#8b7f81;font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.02em}
+.cp .vl{flex:1}
+.pie{margin-top:22px;padding-top:12px;border-top:1px solid #e8dfe0;font-size:11.5px;color:#8b7f81}
+@media print{body{padding:0}.no-print{display:none}}
+</style></head><body>
+<div class="top">
+<div class="k">Constancia de registro · Herramienta de seguimiento y veeduría</div>
+<h1>Derechos de los sujetos populares del campo y de la Reforma Agraria</h1>
+<div class="meta"><b>Dependencia:</b> ${esc(p.id.dep||'—')} &nbsp;·&nbsp; <b>Entidad:</b> ${esc(p.id.ent||'—')}<br>
+<b>Fecha de registro:</b> ${esc(fecha)} &nbsp;·&nbsp; <b>Líneas:</b> ${Object.keys(grupos).length} &nbsp;·&nbsp; <b>Filas:</b> ${(p.filas||[]).length}</div>
+</div>
+${bloques || '<p>No hay registros.</p>'}
+<div class="pie">Este documento reproduce lo que la dependencia registró en la plataforma. Es una constancia para verificación; el consolidado oficial lo mantiene el equipo de veeduría.</div>
+<p class="no-print" style="text-align:center;margin-top:20px"><button onclick="window.print()" style="padding:9px 18px;background:#8E1218;color:#fff;border:0;border-radius:8px;font-size:14px;cursor:pointer">Imprimir o guardar como PDF</button></p>
+</body></html>`;
+}
+function descargarConstancia(){
+const p = S.paqueteEnviado || paquete();
+if(!p.filas || !p.filas.length){ alert('No hay información para la constancia.'); return; }
+bajarArchivo(constanciaHTML(p), nombreArchivo(p,'html'), 'text/html;charset=utf-8');
 }
 function pFin(){
 if(S.enviado){
 $('#finCuerpo').innerHTML = `<div class="emo">✓</div>
-<h2>Recibido. Gracias.</h2>
-<p>Llegaron <b>${S.enviadas} registros</b>. Quedan como constancia.</p>
+<h2>Ha sido enviado. Gracias.</h2>
+<p>Llegaron <b>${S.enviadas} registros</b> y quedan guardados como constancia.</p>
 <div class="caja">
-<p style="margin:0 0 8px"><b>¿Para qué sirve lo que acaba de registrar?</b></p>
-<p style="margin:0">Alimenta el tablero territorial: cada logro con su cifra, su norma y su lugar.
-Es lo que permite defenderlo cuando intenten revertirlo.</p>
+<p style="margin:0 0 8px"><b>Descargue una copia de lo que registró</b></p>
+<p style="margin:0 0 12px">Le queda como respaldo y para verificar la información. Se abre en el
+navegador y puede imprimirla o guardarla como PDF.</p>
+<button class="btn" id="btnConstancia">⬇ Descargar mi constancia</button>
 </div>
 <div class="acciones" style="justify-content:center;margin-top:22px">
 <button class="btn plano" id="btnOtro">Registrar otra dependencia</button></div>`;
-$('#btnOtro').onclick = ()=>{ S.r={}; S.extra={}; S.sub=0; S.enviado=false; guardar(); ir('inicio'); };
+$('#btnConstancia').onclick = descargarConstancia;
+$('#btnOtro').onclick = ()=>{ S.r={}; S.extra={}; S.sub=0; S.enviado=false; S.paqueteEnviado=null; guardar(); ir('inicio'); };
 } else {
 const sinReceptor = /\b40[45]\b/.test(S.errorEnvio||'');
 $('#finCuerpo').innerHTML = `<div class="emo">⚠️</div>
