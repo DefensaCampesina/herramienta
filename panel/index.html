@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Panel de depuración · Veeduría</title>
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+
+<!-- entrada -->
+<div id="entrada" class="entrada">
+  <div class="entrada-caja">
+    <h2>Panel de depuración</h2>
+    <p>Uso interno del equipo de veeduría.</p>
+    <label>Quién entra</label>
+    <select id="eUsuario"></select>
+    <label>Clave del equipo</label>
+    <input id="eClave" type="password" placeholder="Clave de administración" autocomplete="off">
+    <button class="btn grande" id="eEntrar">Entrar</button>
+    <p class="entrada-err" id="eErr"></p>
+  </div>
+</div>
+
+<!-- panel -->
+<div id="panel" class="oculto">
+  <header class="top">
+    <div class="top-in">
+      <div>
+        <div class="kicker">Veeduría · depuración de respuestas</div>
+        <h1>Panel del equipo</h1>
+      </div>
+      <div class="top-der">
+        <span id="quien" class="quien"></span>
+        <button class="btn plano chico" id="btnRefrescar">↻ Actualizar</button>
+        <button class="btn plano chico" id="btnSalir">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- tarjetas de resumen -->
+    <section class="tarjetas" id="tarjetas"></section>
+
+    <!-- pestañas -->
+    <nav class="tabs">
+      <button class="tab on" data-tab="recibida">Información recibida</button>
+      <button class="tab" data-tab="proceso">Proceso</button>
+      <button class="tab" data-tab="descargas">Descargas y tablero</button>
+    </nav>
+
+    <!-- info recibida -->
+    <section id="tab-recibida" class="panel-tab">
+      <div class="filtros">
+        <input id="fBuscar" placeholder="Buscar en la tabla…">
+        <select id="fDep"><option value="">Todas las dependencias</option></select>
+        <select id="fSub"><option value="">Todos los subsistemas</option></select>
+        <select id="fEstado">
+          <option value="">Cualquier estado</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="revisado">Revisado</option>
+          <option value="aprobado">Aprobado</option>
+          <option value="rechazado">Rechazado</option>
+        </select>
+        <span class="cuenta-filtro" id="cuentaFiltro"></span>
+      </div>
+      <div class="tabla-caja"><table id="tabla"></table></div>
+    </section>
+
+    <!-- proceso -->
+    <section id="tab-proceso" class="panel-tab oculto">
+      <div class="proceso-caja">
+        <h3>Lista de proceso</h3>
+        <p class="ayuda">Lo que se marque queda con el nombre de quien lo marcó y la fecha.
+          Es compartido: lo ven las tres personas.</p>
+        <div id="listaProceso"></div>
+        <div class="agregar-paso">
+          <input id="nuevoPaso" placeholder="Agregar un paso…">
+          <button class="btn plano chico" id="btnNuevoPaso">Agregar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- descargas -->
+    <section id="tab-descargas" class="panel-tab oculto">
+      <div class="descargas">
+        <div class="desc-card">
+          <h3>Descargar CSV</h3>
+          <p>Abre en Excel. Trae la columna de estado de depuración.</p>
+          <button class="btn" id="btnCsvTodo">⬇ Todo lo recibido</button>
+          <button class="btn plano" id="btnCsvAprob">⬇ Solo aprobado</button>
+        </div>
+        <div class="desc-card">
+          <h3>Dataset para el tablero</h3>
+          <p>Genera el archivo depurado (solo registros aprobados) que alimentará el tablero.</p>
+          <button class="btn" id="btnDataset">⬇ Generar dataset (.json)</button>
+          <p class="ayuda" id="avisoDataset"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- editor de un registro -->
+<div id="modal" class="modal oculto">
+  <div class="modal-caja">
+    <div class="modal-cab"><h3 id="mTit">Registro</h3><button id="mX">✕</button></div>
+    <div class="modal-cuerpo" id="mCuerpo"></div>
+    <div class="modal-pie">
+      <button class="btn plano" id="mCerrar">Cerrar</button>
+      <button class="btn" id="mGuardar">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div id="aviso" class="aviso-flotante oculto"></div>
+
+<script src="panel.js"></script>
+</body>
+</html>
