@@ -511,9 +511,12 @@ setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
 function constanciaHTML(p){
 const fecha = (()=>{ try{ return new Date(p.recibido).toLocaleString('es-CO'); }catch(e){ return p.recibido||''; } })();
+const CG = f => ['subsistema','linea','situacion_2022','logros','estado','tipo_instrumento',
+'instrumento','donde','poblacion','que_falta','fragilidad','alerta_nivel','alerta_tipo',
+'alerta_nota','fuente','observaciones'].map(c=>f[c]||'').join('¬');
 const grupos = {};
 (p.filas||[]).forEach(f=>{
-const k = (f.subsistema||'')+'¬'+(f.linea||'');
+const k = CG(f);
 if(!grupos[k]) grupos[k] = {...f, indicadores:[]};
 if(f.indicador||f.valor) grupos[k].indicadores.push(
 {nombre:f.indicador,valor:f.valor,unidad:f.unidad,corte:f.fecha_corte});
