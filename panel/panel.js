@@ -61,6 +61,10 @@ async function entrar(silencioso){
   try{
     const d = await cargarDatos();
     if(d && d.ok === false && d.error === 'admin'){ throw new Error('clave'); }
+    if(!d || !Array.isArray(d.filas) || !Array.isArray(d.header)){
+      // respuesta que no es la del panel: normalmente el receptor viejo sin actualizar
+      throw new Error('receptor');
+    }
     D = d;
     sessionStorage.setItem('panel_ses', JSON.stringify({ u, c }));
     $('#entrada').classList.add('oculto');
@@ -69,8 +73,10 @@ async function entrar(silencioso){
     render();
   }catch(e){
     sessionStorage.removeItem('panel_ses');
-    $('#eErr').textContent = e.message === 'clave'
-      ? 'Esa clave no da acceso al panel.' : 'No se pudo entrar: ' + e.message;
+    $('#eErr').textContent =
+      e.message === 'clave'    ? 'Esa clave no da acceso al panel.' :
+      e.message === 'receptor' ? 'El receptor todavía no tiene el panel habilitado (falta actualizarlo).' :
+      'No se pudo entrar: ' + e.message;
     $('#eEntrar').disabled = false; $('#eEntrar').textContent = 'Entrar';
     if(silencioso){ /* al recargar con sesión vieja, vuelve a pedir */ }
   }
