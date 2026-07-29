@@ -133,9 +133,9 @@ const ETIQ = {
 };
 /* filtros que se ofrecen por fuente (los de más peso analítico primero) */
 const FILTROS = {
-  compras: ['beneficiario','situacion','recibido','entrega','vigencia','tipo_proceso','reporte','estado','beneficio','departamento','municipio'],
-  sae:     ['beneficiario','vigencia','entidad','zona','departamento','municipio'],
-  procesos:['tipo_proceso','decision','estado','marco','anio','zona','departamento','municipio'],
+  compras: ['beneficio','situacion','departamento','municipio'],
+  sae:     ['departamento','municipio'],
+  procesos:['tipo_proceso','departamento','municipio'],
 };
 function fuenteFT(){ return (F||{})[S.fuente] || null; }
 /* filas que pasan los filtros activos */
@@ -152,7 +152,10 @@ function vistaFondo(sel){
   const f = fuenteFT();
   if(!f){ $(sel).innerHTML='<p class="vacio">No se pudo cargar la gestión del Fondo de Tierras.</p>'; return; }
   const fuentes = Object.keys(F).map(k=>`<button class="fte ${S.fuente===k?'on':''}" data-f="${k}">${esc(F[k].nombre)}</button>`).join('');
-  const metricas = f.nums.map(n=>`<button class="met ${S.metrica===n?'on':''}" data-m="${n}">${esc(ETIQ[n]||n)}</button>`).join('');
+  // métricas: solo las que traen datos (la fuente puede tener la columna vacía, p. ej. predios en 0)
+  const conDato = f.nums.filter(n=>f.filas.some(fila=>valFT(f,fila,n)>0));
+  if(!conDato.includes(S.metrica)) S.metrica = conDato[0] || f.nums[0];
+  const metricas = conDato.map(n=>`<button class="met ${S.metrica===n?'on':''}" data-m="${n}">${esc(ETIQ[n]||n)}</button>`).join('');
   // municipio en cascada: solo los del departamento elegido (y solo los que sobreviven a los demás filtros)
   const iDep=f.cats.indexOf('departamento'), iMun=f.cats.indexOf('municipio');
   const munVisibles = (()=>{
@@ -182,7 +185,8 @@ function vistaFondo(sel){
     <div class="ft-filtros">${filtros}
       ${hayF?'<button class="ft-limpiar" id="ftLimpiar">↺ Quitar filtros</button>':''}</div>
     <div class="ft-metricas"><span>Pintar el mapa por:</span>${metricas}</div>
-    <div class="mapa-caja" id="mapaFondo"></div>
+    <div class="mapa-zona"><div class="mapa-caja" id="mapaFondo"></div>
+      <div class="panel-cifras oculto" id="panelCifras"></div></div>
     <div class="mapa-pie" id="pieFondo"></div>`;
   $$(sel+' .fte').forEach(b=>b.onclick=()=>{ S.fuente=b.dataset.f; S.filtros={};
     S.metrica=(F[S.fuente].nums[0]||'ha'); vistaFondo(sel); });
@@ -213,14 +217,19 @@ function pintarMapaFondo(selMapa, selPie){
     const g=(G.mpios||{})[cod]; if(!g||!porMun[cod]) return '';
     return `<path class="mf" d="${g.d}" fill="${col}" fill-opacity="${(0.18+esc5(porMun[cod])*0.82).toFixed(2)}" data-cod="${cod}"/>`;
   }).join('');
-  const I=G.inset||[22,22,196,214];
+  const I=G.inset||[22,22,250,150];
   const islas = Object.keys(G.sai||{}).map(k=>`<path class="dp" d="${G.sai[k]}"/>`).join('');
+  const etiq = Object.values(G.sai_labels||{}).map(l=>
+    `<text x="${l.x}" y="${l.y}" text-anchor="middle" class="isl-lab">${esc(l.t)}</text>`).join('');
+  // zoom cuando hay filtro territorial: encuadra los municipios visibles
+  const tr = zoomFondo(Object.keys(porMun));
   $(selMapa).innerHTML = `<svg viewBox="0 0 ${G.vb[0]} ${G.vb[1]}">
-      <g>${base}</g><g>${capa}</g>
-      <g><rect class="inset-b" x="${I[0]}" y="${I[1]}" width="${I[2]}" height="${I[3]}" rx="10"/>${islas}</g></svg>`;
+      <g class="g-zoom" style="transform:${tr}"><g>${base}</g><g>${capa}</g></g>
+      <g><rect class="inset-b" x="${I[0]}" y="${I[1]}" width="${I[2]}" height="${I[3]}" rx="10"/>${islas}${etiq}</g></svg>`;
   const uni = S.metrica==='ha'?'hectáreas':(ETIQ[S.metrica]||S.metrica).toLowerCase();
   $(selPie).innerHTML = `<b>${num(total)}</b> ${esc(uni)} · ${num(nPredios)} registro${nPredios!==1?'s':''}
      en <b>${Object.keys(porMun).length}</b> municipios`;
+  panelCifras(f, filas);
   // nombres de municipio para el tooltip
   const nomMun = {}; const iMun=f.cats.indexOf('municipio'), iDep=f.cats.indexOf('departamento');
   filas.forEach(fila=>{ if(!nomMun[fila[0]]) nomMun[fila[0]] =
@@ -233,6 +242,49 @@ function pintarMapaFondo(selMapa, selPie){
     p.onmouseleave=()=>tip.style.opacity=0;
   });
 }
+/* ---- zoom: al filtrar departamento o municipio, encuadra lo que quedó visible ---- */
+function centroide(cod){ const g=(G.mpios||{})[cod]; return g && g.c ? g.c : null; }
+function zoomFondo(codigos){
+  if(!(S.filtros.departamento || S.filtros.municipio)) return 'none';
+  const pts = codigos.map(centroide).filter(Boolean);
+  if(!pts.length) return 'none';
+  const xs=pts.map(p=>p[0]), ys=pts.map(p=>p[1]);
+  const x0=Math.min(...xs), x1=Math.max(...xs), y0=Math.min(...ys), y1=Math.max(...ys);
+  const cx=(x0+x1)/2, cy=(y0+y1)/2;
+  const m = 120;                                  // margen para que no quede pegado al borde
+  const k = Math.max(1, Math.min(6, Math.min(G.vb[0]/(x1-x0+m), G.vb[1]/(y1-y0+m))));
+  return `translate(${(G.vb[0]/2 - cx*k).toFixed(1)}px, ${(G.vb[1]/2 - cy*k).toFixed(1)}px) scale(${k.toFixed(2)})`;
+}
+/* ---- panel emergente con las cifras de la selección ---- */
+const CIFRAS = [
+  {k:'ha',       n:'Hectáreas'},
+  {k:'predios',  n:'Predios'},
+  {k:'familias', n:'Familias beneficiadas'},
+  {k:'mujeres',  n:'Beneficiarias mujeres'},
+];
+function panelCifras(f, filas){
+  const el = $('#panelCifras'); if(!el) return;
+  const dep = S.filtros.departamento, mun = S.filtros.municipio;
+  if(!dep && !mun){ el.classList.add('oculto'); el.innerHTML=''; return; }
+  const tot = {};
+  CIFRAS.forEach(c=>{ if(f.nums.includes(c.k))
+    tot[c.k] = filas.reduce((a,fila)=>a+valFT(f,fila,c.k),0); });
+  const municipios = new Set(filas.map(x=>x[0])).size;
+  el.classList.remove('oculto');
+  el.innerHTML = `
+    <div class="pc-cab"><div class="pc-lugar">${esc(mun||dep)}</div>
+      ${mun?`<div class="pc-dep">${esc(dep||'')}</div>`:`<div class="pc-dep">${municipios} municipio${municipios!==1?'s':''}</div>`}
+      <button class="pc-x" id="pcX" title="Quitar el filtro territorial">✕</button></div>
+    <div class="pc-cifras">
+      ${CIFRAS.filter(c=>tot[c.k]!==undefined).map(c=>`
+        <div class="pc-it ${tot[c.k]?'':'vacia'}">
+          <div class="pc-n">${tot[c.k]?num(tot[c.k]):'—'}</div>
+          <div class="pc-l">${esc(c.n)}</div></div>`).join('')}
+    </div>
+    <div class="pc-pie">${num(filas.length)} registro${filas.length!==1?'s':''} · ${esc(F[S.fuente].nombre)}</div>`;
+  const x=$('#pcX'); if(x) x.onclick=()=>{ S.filtros.departamento=''; S.filtros.municipio=''; vistaFondo('#cuerpoMapa'); };
+}
+
 /* créditos de las fotografías: las licencias CC BY-SA exigen atribución */
 function pintarCreditos(sel){
   const el=$(sel); if(!el) return;
@@ -252,41 +304,22 @@ const numDe = s => { // "826.734,9" -> 826734.9 ; "$22" -> 22 ; "7 %–8 %" -> 7
   const v = parseFloat(m.replace(/\./g,'').replace(',','.'));
   return isNaN(v) ? null : v;
 };
+/* Sin barras comparativas: estas cifras son de frentes distintos y no se comparan
+   entre sí. Cada dato es una tarjeta con su número creciendo y una línea de
+   progreso que solo acompaña el conteo (llega siempre al 100%). */
 function pintarHitos(sel){
-  $(sel).innerHTML = arr(D.hitosGrupos).map((gr,gi)=>{
-    // agrupar por unidad: solo se comparan barras de la misma unidad
-    const porU = {};
-    gr.items.forEach((it,i)=>{ const v=numDe(it.c); if(v==null) return;
-      (porU[it.u] = porU[it.u] || []).push({...it, v, i}); });
-    const barrasU = Object.entries(porU).filter(([,l])=>l.length>=2)
-      .sort((a,b)=>b[1].length-a[1].length)[0];
-    const enBarras = new Set(barrasU ? barrasU[1].map(x=>x.i) : []);
-    let grafica = '';
-    if(barrasU){
-      const [unidad, lista] = barrasU;
-      const max = Math.max(...lista.map(x=>x.v));
-      grafica = `<div class="ht-graf" role="img"
-          aria-label="${esc(lista.map(x=>x.c+' '+unidad+' '+x.t).join('; '))}">
-        <div class="ht-graf-u">${esc(unidad)}</div>
-        ${lista.map(x=>`<div class="ht-b">
-          <div class="ht-b-lab">${esc(x.t)}</div>
-          <div class="ht-b-riel"><i style="--w:${(x.v/max*100).toFixed(1)}%"></i>
-            <b class="ht-b-val" data-n="${x.v}" data-txt="${esc(x.c)}">0</b></div>
-        </div>`).join('')}
-      </div>`;
-    }
-    const sueltos = gr.items.filter((it,i)=>!enBarras.has(i));
-    return `<div class="ht anim" style="--d:${gi*50}ms;--c:${gr.color}">
+  $(sel).innerHTML = arr(D.hitosGrupos).map((gr,gi)=>`
+    <div class="ht anim" style="--d:${gi*50}ms;--c:${gr.color}">
       <div class="ht-cab"><span class="ht-emo">${gr.emoji}</span>
         <div><h4>${esc(gr.titulo)}</h4><small>${esc(gr.guia||'')}</small></div></div>
-      ${grafica}
-      ${sueltos.map(it=>{const v=numDe(it.c);
-        return `<div class="ht-it">
+      ${gr.items.map((it,k)=>{ const v=numDe(it.c);
+        return `<div class="ht-it" style="--k:${k*90}ms">
           <div class="ht-c">${v!=null?`<span class="cnt" data-n="${v}" data-txt="${esc(it.c)}">0</span>`:esc(it.c)}
             <span class="ht-u">${esc(it.u)}</span></div>
-          <div class="ht-t">${esc(it.t)}</div></div>`;}).join('')}
-    </div>`;
-  }).join('');
+          <div class="ht-t">${esc(it.t)}</div>
+          <div class="ht-linea"><i></i></div>
+        </div>`; }).join('')}
+    </div>`).join('');
   animarAlVer(sel);
 }
 /* dispara la animación cuando la tarjeta entra en pantalla; luego la deja quieta */
