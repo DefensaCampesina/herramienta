@@ -4,8 +4,6 @@ let D=null, G=null, T=null, F=null;
 const S = { nivel:'inicio', sujeto:null, dimension:null, derecho:null,
             capa:'zrc', pestMapa:'terr', alFiltro:{nivel:'',derecho:'',sujeto:''}, zoom:null,
             fuente:'compras', metrica:'ha', filtros:{} };
-const IMG = {campesinado:'campesinado', indigenas:'indigenas', afro:'afro',
-             pescadores:'pescadores', mujeres:'mujeres', jovenes:'jovenes'};
 
 const $  = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
@@ -68,7 +66,7 @@ function vInicio(){
   const cards = arr(D.sujetos).map((su,i)=>{
     const n=instrumentos(su).length;
     return `<button class="card-suj anim" style="--d:${i*55}ms" data-suj="${su.k}">
-      <span class="csi" style="background-image:url('img/${IMG[su.k]||'campesinado'}.jpg')"></span>
+      <span class="csi" style="background-image:url('img/${su.img||su.k}.jpg')"></span>
       <span class="txt"><b>${esc(su.n)}</b><small>${n} instrumento${n!==1?'s':''}</small></span>
       <span class="flecha">→</span></button>`;
   }).join('');
@@ -486,7 +484,7 @@ function fichaAlerta(r){
 }
 
 /* ================= drill-down ================= */
-const heroSujeto = () => `<div class="hero" style="background-image:url('img/${IMG[S.sujeto.k]||'campesinado'}.jpg')">
+const heroSujeto = () => `<div class="hero" style="background-image:url('img/${S.sujeto.img||S.sujeto.k}.jpg')">
     <div class="hero-txt"><span>${S.sujeto.emoji}</span><h2>${esc(S.sujeto.n)}</h2></div></div>`;
 function vDimensiones(){
   const cards = dimensionesDe(S.sujeto).map((dm,i)=>{
@@ -545,6 +543,7 @@ function fichaInstrumento(it){
     <div class="desc">${esc(it.descripcion||it.epigrafe.slice(0,90))}</div>
     <details class="epi-det"><summary>Ver el texto del epígrafe</summary>
       <div class="epi">${esc(it.epigrafe)}</div></details>
+    ${it.falta?`<div class="falta"><span class="falta-t">Qué falta</span>${esc(it.falta)}</div>`:''}
     <div class="meta">${it.sujetos.map(s=>`<span class="chip-x">${esc(s)}</span>`).join('')}
       ${it.dimensiones.map(d=>`<span>· ${esc(d)}</span>`).join('')}</div>
     <div class="fuente-x">Fuente: ${esc(it.hoja)} ·
