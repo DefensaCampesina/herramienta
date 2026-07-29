@@ -31,7 +31,12 @@ function instrumentos(suj,dim,der){
     return true;
   });
 }
-/* dimensiones válidas para un sujeto (campesinado no lleva cultural-ancestral) */
+/* dimensiones de un sujeto. La dimensión cultural se llama "Cultural-ancestral" para los
+   pueblos étnicos y solo "Cultural" para el campesinado y los demás sujetos. */
+function nombreDim(dm, suj){
+  if(dm.nAlt && suj && !suj.etnico) return dm.nAlt;
+  return dm.n;
+}
 function dimensionesDe(suj){
   const excl = arr(suj && suj.sinDimension).map(noAc);
   return arr(D.dimensiones).filter(dm=>!excl.includes(noAc(dm.n)) && !excl.includes(noAc(dm.k)));
@@ -46,7 +51,7 @@ function ruta(){
   if(S.nivel==='alertas') m.push({t:'Alertas',on:()=>{}});
   if(S.nivel==='territorialidades') m.push({t:'Territorialidades',on:()=>{}});
   if(S.sujeto) m.push({t:S.sujeto.n,on:()=>ir('dimensiones',{dimension:null,derecho:null})});
-  if(S.dimension) m.push({t:S.dimension.n,on:()=>ir('derechos',{derecho:null})});
+  if(S.dimension) m.push({t:nombreDim(S.dimension,S.sujeto),on:()=>ir('derechos',{derecho:null})});
   if(S.derecho) m.push({t:S.derecho.n,on:()=>{}});
   const R=$('#ruta');
   if(m.length<=1){ R.innerHTML=''; return; }
@@ -130,9 +135,9 @@ const ETIQ = {
 };
 /* filtros que se ofrecen por fuente (los de más peso analítico primero) */
 const FILTROS = {
-  compras: ['beneficiario','situacion','recibido','entrega','vigencia','tipo_proceso','reporte','estado','beneficio','departamento'],
-  sae:     ['beneficiario','vigencia','entidad','zona','departamento'],
-  procesos:['tipo_proceso','decision','estado','marco','anio','zona','departamento'],
+  compras: ['beneficiario','situacion','recibido','entrega','vigencia','tipo_proceso','reporte','estado','beneficio','departamento','municipio'],
+  sae:     ['beneficiario','vigencia','entidad','zona','departamento','municipio'],
+  procesos:['tipo_proceso','decision','estado','marco','anio','zona','departamento','municipio'],
 };
 function fuenteFT(){ return (F||{})[S.fuente] || null; }
 /* filas que pasan los filtros activos */
@@ -150,11 +155,27 @@ function vistaFondo(sel){
   if(!f){ $(sel).innerHTML='<p class="vacio">No se pudo cargar la gestión del Fondo de Tierras.</p>'; return; }
   const fuentes = Object.keys(F).map(k=>`<button class="fte ${S.fuente===k?'on':''}" data-f="${k}">${esc(F[k].nombre)}</button>`).join('');
   const metricas = f.nums.map(n=>`<button class="met ${S.metrica===n?'on':''}" data-m="${n}">${esc(ETIQ[n]||n)}</button>`).join('');
+  // municipio en cascada: solo los del departamento elegido (y solo los que sobreviven a los demás filtros)
+  const iDep=f.cats.indexOf('departamento'), iMun=f.cats.indexOf('municipio');
+  const munVisibles = (()=>{
+    if(iMun<0) return null;
+    const act = Object.entries(S.filtros).filter(([k,v])=>v && k!=='municipio' && f.cats.includes(k));
+    const s = new Set();
+    f.filas.forEach(fila=>{
+      if(!act.every(([k,v])=>f.dic[k][fila[1+f.cats.indexOf(k)]]===v)) return;
+      s.add(f.dic.municipio[fila[1+iMun]]);
+    });
+    return s;
+  })();
   const filtros = FILTROS[S.fuente].filter(c=>f.cats.includes(c)).map(c=>{
-    const vals = f.dic[c].map((v,i)=>({v,i})).filter(x=>x.v).sort((a,b)=>a.v.localeCompare(b.v));
-    if(vals.length<2) return '';
-    return `<label class="ft-f"><span>${esc(ETIQ[c]||c)}</span>
-      <select data-cat="${c}"><option value="">Todos</option>
+    let vals = f.dic[c].map((v,i)=>({v,i})).filter(x=>x.v);
+    if(c==='municipio' && munVisibles) vals = vals.filter(x=>munVisibles.has(x.v));
+    vals.sort((a,b)=>a.v.localeCompare(b.v));
+    if(vals.length<2 && c!=='municipio') return '';
+    const depSel = S.filtros.departamento;
+    const etq = c==='municipio' && depSel ? `Municipio (${esc(depSel)})` : (ETIQ[c]||c);
+    return `<label class="ft-f"><span>${esc(etq)}</span>
+      <select data-cat="${c}"><option value="">${c==='municipio'?`Todos (${vals.length})`:'Todos'}</option>
       ${vals.map(x=>`<option ${S.filtros[c]===x.v?'selected':''}>${esc(x.v)}</option>`).join('')}</select></label>`;
   }).join('');
   const hayF = Object.values(S.filtros).some(v=>v);
@@ -168,7 +189,12 @@ function vistaFondo(sel){
   $$(sel+' .fte').forEach(b=>b.onclick=()=>{ S.fuente=b.dataset.f; S.filtros={};
     S.metrica=(F[S.fuente].nums[0]||'ha'); vistaFondo(sel); });
   $$(sel+' .met').forEach(b=>b.onclick=()=>{ S.metrica=b.dataset.m; vistaFondo(sel); });
-  $$(sel+' select[data-cat]').forEach(s=>s.onchange=()=>{ S.filtros[s.dataset.cat]=s.value; vistaFondo(sel); });
+  $$(sel+' select[data-cat]').forEach(s=>s.onchange=()=>{
+    S.filtros[s.dataset.cat]=s.value;
+    // al cambiar de departamento, el municipio elegido puede no pertenecerle
+    if(s.dataset.cat==='departamento') S.filtros.municipio='';
+    vistaFondo(sel);
+  });
   const lim=$('#ftLimpiar'); if(lim) lim.onclick=()=>{ S.filtros={}; vistaFondo(sel); };
   pintarMapaFondo('#mapaFondo','#pieFondo');
 }
@@ -219,16 +245,84 @@ function pintarCreditos(sel){
     el.innerHTML = `<b>Fotografías:</b> Wikimedia Commons — ${l}`;
   }).catch(()=>{ el.innerHTML=''; });
 }
-/* hitos como tarjetas, con subtítulo guía de qué encuentra en cada una */
+/* ---------- hitos: tarjetas con gráfica animada ----------
+   Cada tarjeta lleva UN color (es magnitud, no categorías que compitan).
+   Las cifras que comparten unidad se comparan en barras; el resto van con
+   contador animado. Todo arranca al entrar en pantalla y se queda quieto. */
+const numDe = s => { // "826.734,9" -> 826734.9 ; "$22" -> 22 ; "7 %–8 %" -> 7
+  const m = String(s).replace(/[^\d.,–-]/g,'').split(/[–-]/)[0];
+  const v = parseFloat(m.replace(/\./g,'').replace(',','.'));
+  return isNaN(v) ? null : v;
+};
 function pintarHitos(sel){
-  $(sel).innerHTML = arr(D.hitosGrupos).map((gr,gi)=>`
-    <div class="ht anim" style="--d:${gi*50}ms;--c:${gr.color}">
+  $(sel).innerHTML = arr(D.hitosGrupos).map((gr,gi)=>{
+    // agrupar por unidad: solo se comparan barras de la misma unidad
+    const porU = {};
+    gr.items.forEach((it,i)=>{ const v=numDe(it.c); if(v==null) return;
+      (porU[it.u] = porU[it.u] || []).push({...it, v, i}); });
+    const barrasU = Object.entries(porU).filter(([,l])=>l.length>=2)
+      .sort((a,b)=>b[1].length-a[1].length)[0];
+    const enBarras = new Set(barrasU ? barrasU[1].map(x=>x.i) : []);
+    let grafica = '';
+    if(barrasU){
+      const [unidad, lista] = barrasU;
+      const max = Math.max(...lista.map(x=>x.v));
+      grafica = `<div class="ht-graf" role="img"
+          aria-label="${esc(lista.map(x=>x.c+' '+unidad+' '+x.t).join('; '))}">
+        <div class="ht-graf-u">${esc(unidad)}</div>
+        ${lista.map(x=>`<div class="ht-b">
+          <div class="ht-b-lab">${esc(x.t)}</div>
+          <div class="ht-b-riel"><i style="--w:${(x.v/max*100).toFixed(1)}%"></i>
+            <b class="ht-b-val" data-n="${x.v}" data-txt="${esc(x.c)}">0</b></div>
+        </div>`).join('')}
+      </div>`;
+    }
+    const sueltos = gr.items.filter((it,i)=>!enBarras.has(i));
+    return `<div class="ht anim" style="--d:${gi*50}ms;--c:${gr.color}">
       <div class="ht-cab"><span class="ht-emo">${gr.emoji}</span>
         <div><h4>${esc(gr.titulo)}</h4><small>${esc(gr.guia||'')}</small></div></div>
-      ${gr.items.map(it=>`<div class="ht-it">
-        <div class="ht-c">${esc(it.c)} <span class="ht-u">${esc(it.u)}</span></div>
-        <div class="ht-t">${esc(it.t)}</div></div>`).join('')}
-    </div>`).join('');
+      ${grafica}
+      ${sueltos.map(it=>{const v=numDe(it.c);
+        return `<div class="ht-it">
+          <div class="ht-c">${v!=null?`<span class="cnt" data-n="${v}" data-txt="${esc(it.c)}">0</span>`:esc(it.c)}
+            <span class="ht-u">${esc(it.u)}</span></div>
+          <div class="ht-t">${esc(it.t)}</div></div>`;}).join('')}
+    </div>`;
+  }).join('');
+  animarAlVer(sel);
+}
+/* dispara la animación cuando la tarjeta entra en pantalla; luego la deja quieta */
+function animarAlVer(sel){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const tarjetas = $$(sel+' .ht');
+  const arrancar = t => {
+    if(t.dataset.listo) return; t.dataset.listo='1';
+    t.classList.add('ver');
+    t.querySelectorAll('.cnt,.ht-b-val').forEach(e=>contar(e, reduce));
+  };
+  if(reduce || !('IntersectionObserver' in window)){ tarjetas.forEach(arrancar); return; }
+  const io = new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting){ arrancar(e.target); io.unobserve(e.target); }
+  }), { threshold:0.28 });
+  tarjetas.forEach(t=>io.observe(t));
+}
+function contar(el, reduce){
+  const fin = parseFloat(el.dataset.n); if(isNaN(fin)) return;
+  const txt = el.dataset.txt;                       // formato original ("826.734,9", "$22")
+  const dec = (txt||'').includes(',') ? 1 : 0;
+  const fmt = v => {
+    const s = v.toLocaleString('es-CO',{minimumFractionDigits:dec, maximumFractionDigits:dec});
+    return txt ? txt.replace(/[\d.,]+/, s) : s;     // conserva $ y %
+  };
+  if(reduce){ el.textContent = fmt(fin); return; }
+  const dur = 1100, t0 = performance.now();
+  const paso = t => {
+    const p = Math.min(1, (t-t0)/dur);
+    const e = 1 - Math.pow(1-p, 3);                 // desacelera al final
+    el.textContent = fmt(fin*e);
+    if(p<1) requestAnimationFrame(paso); else el.textContent = fmt(fin);
+  };
+  requestAnimationFrame(paso);
 }
 
 /* ---------- mapa de territorialidades ---------- */
@@ -398,7 +492,7 @@ function vDimensiones(){
   const cards = dimensionesDe(S.sujeto).map((dm,i)=>{
     const n=instrumentos(S.sujeto,dm).length; if(!n) return '';
     return `<button class="card-nav anim" style="--d:${i*60}ms" data-dim="${dm.k}"><span class="emoji">${dm.emoji}</span>
-      <h3>${esc(dm.n)}</h3><span class="cuenta">${n} instrumento${n!==1?'s':''}</span>
+      <h3>${esc(nombreDim(dm,S.sujeto))}</h3><span class="cuenta">${n} instrumento${n!==1?'s':''}</span>
       <span class="flecha">→</span></button>`;
   }).join('');
   $('#app').innerHTML=`${heroSujeto()}
@@ -414,7 +508,7 @@ function vDerechos(){
       <span class="flecha">→</span></button>`;
   }).join('');
   $('#app').innerHTML=`${heroSujeto()}
-    <p class="intro">Dimensión <b>${esc(S.dimension.n)}</b>. Derechos con instrumentos:</p>
+    <p class="intro">Dimensión <b>${esc(nombreDim(S.dimension,S.sujeto))}</b>. Derechos con instrumentos:</p>
     <div class="rej der">${cards||'<p class="vacio">Sin derechos con instrumentos.</p>'}</div>`;
   $$('#app .card-nav').forEach(b=>b.onclick=()=>{ S.derecho=D.derechos.find(x=>x.k===b.dataset.der); ir('herramienta'); });
 }
@@ -423,7 +517,7 @@ function vHerramienta(){
   const ruta=(D.rutas||{})[S.derecho.k]||{};
   const alertas = arr(D.respuestas).filter(r=>r.alerta && derDeResp(r)===S.derecho.k && (r.alerta.nota||'').trim().length>10);
   $('#app').innerHTML=`
-    <div class="h4-cab"><div class="der-sub">${esc(S.sujeto.n)} · ${esc(S.dimension.n)}</div>
+    <div class="h4-cab"><div class="der-sub">${esc(S.sujeto.n)} · ${esc(nombreDim(S.dimension,S.sujeto))}</div>
       <h2>${esc(S.derecho.n)}</h2>
       <div class="ctx">${esc(S.derecho.sub)} · ${its.length} instrumento${its.length!==1?'s':''}</div></div>
     <div class="cols2">
