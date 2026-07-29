@@ -1,8 +1,9 @@
 /* Tablero v5.1 — portada partida (sujetos+alertas | mapa de territorialidades),
    drill-down Sujeto → Dimensión → Derecho → Instrumentos, y cápsula de alertas. */
-let D=null, G=null, T=null;
+let D=null, G=null, T=null, F=null;
 const S = { nivel:'inicio', sujeto:null, dimension:null, derecho:null,
-            capa:'zrc', pestMapa:'terr', alFiltro:{nivel:'',derecho:'',sujeto:''}, zoom:null };
+            capa:'zrc', pestMapa:'terr', alFiltro:{nivel:'',derecho:'',sujeto:''}, zoom:null,
+            fuente:'compras', metrica:'ha', filtros:{} };
 const IMG = {campesinado:'campesinado', indigenas:'indigenas', afro:'afro',
              pescadores:'pescadores', mujeres:'mujeres', jovenes:'jovenes'};
 
@@ -16,8 +17,9 @@ const noAc = s => String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerC
 Promise.all([
   fetch('datos.json').then(r=>r.json()),
   fetch('geo.json').then(r=>r.json()),
-  fetch('territorialidades.json').then(r=>r.json()).catch(()=>({}))
-]).then(([d,g,t])=>{ D=d; G=g; T=t; render(); })
+  fetch('territorialidades.json').then(r=>r.json()).catch(()=>({})),
+  fetch('fondo.json').then(r=>r.json()).catch(()=>null)
+]).then(([d,g,t,f])=>{ D=d; G=g; T=t; F=f; render(); })
  .catch(e=>{ $('#app').innerHTML=`<p class="vacio">No se pudieron cargar los datos: ${esc(e.message)}</p>`; });
 
 /* ---------- filtros de instrumentos ---------- */
@@ -83,13 +85,11 @@ function vInicio(){
 
      <div class="col-der">
        <div class="mapa-panel anim">
-         <div class="mapa-cab">
-           <h3>🗺️ Territorialidades y seguridad alimentaria</h3>
-           <button class="ver-todo" id="verTerr">Ver detalle →</button>
+         <div class="pest-mapa">
+           <button class="pest ${S.pestMapa==='terr'?'on':''}" data-p="terr">🗺️ Territorialidades y APPA</button>
+           <button class="pest ${S.pestMapa==='fondo'?'on':''}" data-p="fondo">🌱 Gestión del Fondo de Tierras</button>
          </div>
-         <div class="capas" id="capas"></div>
-         <div class="mapa-caja" id="mapaBox"></div>
-         <div class="mapa-pie" id="mapaPie"></div>
+         <div id="cuerpoMapa"></div>
        </div>
      </div>
    </div>
@@ -102,9 +102,112 @@ function vInicio(){
 
   $$('#app .card-suj').forEach(b=>b.onclick=()=>{ S.sujeto=D.sujetos.find(x=>x.k===b.dataset.suj); ir('dimensiones'); });
   $('#btnAl').onclick=()=>ir('alertas');
+  $$('#app .pest').forEach(b=>b.onclick=()=>{ S.pestMapa=b.dataset.p;
+    $$('#app .pest').forEach(x=>x.classList.toggle('on',x===b)); cuerpoMapa(); });
+  cuerpoMapa();
+  pintarHitos('#hitosRej'); pintarCreditos('#creditos');
+}
+function cuerpoMapa(){
+  if(S.pestMapa==='fondo'){ vistaFondo('#cuerpoMapa'); return; }
+  $('#cuerpoMapa').innerHTML = `
+    <div class="mapa-cab2"><span>Elija una capa; pase el cursor sobre el mapa.</span>
+      <button class="ver-todo" id="verTerr">Ver detalle →</button></div>
+    <div class="capas" id="capas"></div>
+    <div class="mapa-caja" id="mapaBox"></div>
+    <div class="mapa-pie" id="mapaPie"></div>`;
   $('#verTerr').onclick=()=>ir('territorialidades');
   pintarCapas('#capas'); pintarMapa('#mapaBox','#mapaPie');
-  pintarHitos('#hitosRej'); pintarCreditos('#creditos');
+}
+
+/* ============ GESTIÓN DEL FONDO DE TIERRAS: Excel espacializado ============ */
+const ETIQ = {
+  tipo_proceso:'Tipo de proceso', vigencia:'Vigencia', beneficiario:'Tipo de beneficiario',
+  reporte:'Reporte de comprados', estado:'Estado del procedimiento', recibido:'Recibido por la ANT',
+  entrega:'Entrega material del predio', situacion:'Situación jurídica', beneficio:'Tipo de beneficio',
+  departamento:'Departamento', municipio:'Municipio', entidad:'Entidad receptora', zona:'Zona',
+  marco:'Marco legal', anio:'Año', tipo_predio:'Tipo de predio', decision:'Tipo de decisión',
+  ha:'Hectáreas', predios:'Predios', familias:'Familias beneficiadas', mujeres:'Beneficiarias mujeres'
+};
+/* filtros que se ofrecen por fuente (los de más peso analítico primero) */
+const FILTROS = {
+  compras: ['beneficiario','situacion','recibido','entrega','vigencia','tipo_proceso','reporte','estado','beneficio','departamento'],
+  sae:     ['beneficiario','vigencia','entidad','zona','departamento'],
+  procesos:['tipo_proceso','decision','estado','marco','anio','zona','departamento'],
+};
+function fuenteFT(){ return (F||{})[S.fuente] || null; }
+/* filas que pasan los filtros activos */
+function filasFT(){
+  const f = fuenteFT(); if(!f) return [];
+  const act = Object.entries(S.filtros).filter(([k,v])=>v!=='' && v!=null && f.cats.includes(k));
+  return f.filas.filter(fila => act.every(([k,v]) => f.dic[k][fila[1+f.cats.indexOf(k)]] === v));
+}
+const valFT = (f,fila,campo) => {
+  const i = f.nums.indexOf(campo);
+  return i<0 ? 0 : (fila[1+f.cats.length+i] || 0);
+};
+function vistaFondo(sel){
+  const f = fuenteFT();
+  if(!f){ $(sel).innerHTML='<p class="vacio">No se pudo cargar la gestión del Fondo de Tierras.</p>'; return; }
+  const fuentes = Object.keys(F).map(k=>`<button class="fte ${S.fuente===k?'on':''}" data-f="${k}">${esc(F[k].nombre)}</button>`).join('');
+  const metricas = f.nums.map(n=>`<button class="met ${S.metrica===n?'on':''}" data-m="${n}">${esc(ETIQ[n]||n)}</button>`).join('');
+  const filtros = FILTROS[S.fuente].filter(c=>f.cats.includes(c)).map(c=>{
+    const vals = f.dic[c].map((v,i)=>({v,i})).filter(x=>x.v).sort((a,b)=>a.v.localeCompare(b.v));
+    if(vals.length<2) return '';
+    return `<label class="ft-f"><span>${esc(ETIQ[c]||c)}</span>
+      <select data-cat="${c}"><option value="">Todos</option>
+      ${vals.map(x=>`<option ${S.filtros[c]===x.v?'selected':''}>${esc(x.v)}</option>`).join('')}</select></label>`;
+  }).join('');
+  const hayF = Object.values(S.filtros).some(v=>v);
+  $(sel).innerHTML = `
+    <div class="ft-fuentes">${fuentes}</div>
+    <div class="ft-filtros">${filtros}
+      ${hayF?'<button class="ft-limpiar" id="ftLimpiar">↺ Quitar filtros</button>':''}</div>
+    <div class="ft-metricas"><span>Pintar el mapa por:</span>${metricas}</div>
+    <div class="mapa-caja" id="mapaFondo"></div>
+    <div class="mapa-pie" id="pieFondo"></div>`;
+  $$(sel+' .fte').forEach(b=>b.onclick=()=>{ S.fuente=b.dataset.f; S.filtros={};
+    S.metrica=(F[S.fuente].nums[0]||'ha'); vistaFondo(sel); });
+  $$(sel+' .met').forEach(b=>b.onclick=()=>{ S.metrica=b.dataset.m; vistaFondo(sel); });
+  $$(sel+' select[data-cat]').forEach(s=>s.onchange=()=>{ S.filtros[s.dataset.cat]=s.value; vistaFondo(sel); });
+  const lim=$('#ftLimpiar'); if(lim) lim.onclick=()=>{ S.filtros={}; vistaFondo(sel); };
+  pintarMapaFondo('#mapaFondo','#pieFondo');
+}
+function pintarMapaFondo(selMapa, selPie){
+  const f = fuenteFT(); const filas = filasFT();
+  // agregar por municipio
+  const porMun = {}; let total=0, nPredios=0;
+  filas.forEach(fila=>{
+    const cod=fila[0], v=valFT(f,fila,S.metrica);
+    porMun[cod]=(porMun[cod]||0)+v; total+=v; nPredios++;
+  });
+  const vals = Object.values(porMun).filter(v=>v>0);
+  const max = vals.length?Math.max(...vals):1;
+  const esc5 = v => { const t=Math.sqrt(v/max); return t; };   // raíz: evita que un municipio aplaste al resto
+  const base = Object.values(G.dptos||{}).map(d=>`<path class="dp" d="${d}"/>`).join('');
+  const col = F[S.fuente].color;
+  const capa = Object.keys(porMun).map(cod=>{
+    const g=(G.mpios||{})[cod]; if(!g||!porMun[cod]) return '';
+    return `<path class="mf" d="${g.d}" fill="${col}" fill-opacity="${(0.18+esc5(porMun[cod])*0.82).toFixed(2)}" data-cod="${cod}"/>`;
+  }).join('');
+  const I=G.inset||[22,22,196,214];
+  const islas = Object.keys(G.sai||{}).map(k=>`<path class="dp" d="${G.sai[k]}"/>`).join('');
+  $(selMapa).innerHTML = `<svg viewBox="0 0 ${G.vb[0]} ${G.vb[1]}">
+      <g>${base}</g><g>${capa}</g>
+      <g><rect class="inset-b" x="${I[0]}" y="${I[1]}" width="${I[2]}" height="${I[3]}" rx="10"/>${islas}</g></svg>`;
+  const uni = S.metrica==='ha'?'hectáreas':(ETIQ[S.metrica]||S.metrica).toLowerCase();
+  $(selPie).innerHTML = `<b>${num(total)}</b> ${esc(uni)} · ${num(nPredios)} registro${nPredios!==1?'s':''}
+     en <b>${Object.keys(porMun).length}</b> municipios`;
+  // nombres de municipio para el tooltip
+  const nomMun = {}; const iMun=f.cats.indexOf('municipio'), iDep=f.cats.indexOf('departamento');
+  filas.forEach(fila=>{ if(!nomMun[fila[0]]) nomMun[fila[0]] =
+    [f.dic.municipio?f.dic.municipio[fila[1+iMun]]:'', f.dic.departamento?f.dic.departamento[fila[1+iDep]]:''];});
+  const tip=$('#tip');
+  $$(`${selMapa} path.mf`).forEach(p=>{
+    p.onmousemove=e=>{ const cod=p.dataset.cod, n=nomMun[cod]||['',''];
+      tip.innerHTML=`<b>${esc(n[0]||cod)}</b><br>${esc(n[1]||'')}<br>${num(porMun[cod])} ${esc(uni)}`;
+      tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY+14)+'px'; tip.style.opacity=1; };
+    p.onmouseleave=()=>tip.style.opacity=0;
+  });
 }
 /* créditos de las fotografías: las licencias CC BY-SA exigen atribución */
 function pintarCreditos(sel){
