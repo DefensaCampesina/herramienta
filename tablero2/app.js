@@ -61,7 +61,7 @@ function vInicio(){
   const cards = arr(D.sujetos).map((su,i)=>{
     const n=instrumentos(su).length;
     return `<button class="card-suj anim" style="--d:${i*55}ms" data-suj="${su.k}">
-      <span class="csi" style="background-image:url('img/${IMG[su.k]||'campesinado'}.svg')"></span>
+      <span class="csi" style="background-image:url('img/${IMG[su.k]||'campesinado'}.jpg')"></span>
       <span class="txt"><b>${esc(su.n)}</b><small>${n} instrumento${n!==1?'s':''}</small></span>
       <span class="flecha">→</span></button>`;
   }).join('');
@@ -83,48 +83,49 @@ function vInicio(){
 
      <div class="col-der">
        <div class="mapa-panel anim">
-         <div class="pest-mapa">
-           <button class="pest ${S.pestMapa==='terr'?'on':''}" data-p="terr">🗺️ Territorialidades y APPA</button>
-           <button class="pest ${S.pestMapa==='hitos'?'on':''}" data-p="hitos">📊 Gestión de tierra</button>
+         <div class="mapa-cab">
+           <h3>🗺️ Territorialidades y seguridad alimentaria</h3>
+           <button class="ver-todo" id="verTerr">Ver detalle →</button>
          </div>
-         <div id="cuerpoMapa"></div>
+         <div class="capas" id="capas"></div>
+         <div class="mapa-caja" id="mapaBox"></div>
+         <div class="mapa-pie" id="mapaPie"></div>
        </div>
      </div>
-   </div>`;
+   </div>
+
+   <div class="seccion-tit">Hitos de la reforma agraria</div>
+   <p class="guia-hitos">${esc(D.hitosIntro||'')} Cada tarjeta reúne las cifras de un frente de la política agraria.</p>
+   <div class="hitos-rej" id="hitosRej"></div>
+   <p class="hitos-fte">Fuente: ${esc(D.hitosFuente||'')}</p>
+   <div class="creditos" id="creditos"></div>`;
+
   $$('#app .card-suj').forEach(b=>b.onclick=()=>{ S.sujeto=D.sujetos.find(x=>x.k===b.dataset.suj); ir('dimensiones'); });
   $('#btnAl').onclick=()=>ir('alertas');
-  $$('#app .pest').forEach(b=>b.onclick=()=>{ S.pestMapa=b.dataset.p;
-    $$('#app .pest').forEach(x=>x.classList.toggle('on',x===b)); cuerpoMapa(); });
-  cuerpoMapa();
-}
-/* pestañas del panel derecho */
-function cuerpoMapa(){
-  if(S.pestMapa==='hitos'){ pintarHitos('#cuerpoMapa'); return; }
-  $('#cuerpoMapa').innerHTML = `
-    <div class="mapa-cab2"><span>Elija una capa; pase el cursor sobre el mapa.</span>
-      <button class="ver-todo" id="verTerr">Ver detalle →</button></div>
-    <div class="capas" id="capas"></div>
-    <div class="mapa-caja" id="mapaBox"></div>
-    <div class="mapa-pie" id="mapaPie"></div>`;
   $('#verTerr').onclick=()=>ir('territorialidades');
   pintarCapas('#capas'); pintarMapa('#mapaBox','#mapaPie');
+  pintarHitos('#hitosRej'); pintarCreditos('#creditos');
 }
-/* pestaña 2: hitos concretos (hito + cifra) */
+/* créditos de las fotografías: las licencias CC BY-SA exigen atribución */
+function pintarCreditos(sel){
+  const el=$(sel); if(!el) return;
+  fetch('img/creditos.json').then(r=>r.json()).then(c=>{
+    const l=Object.values(c).map(x=>
+      `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.titulo.replace(/\.(jpg|jpeg|png)$/i,''))}</a>` +
+      ` · ${esc(x.autor||'autor no indicado')} · ${esc(x.licencia)}`).join(' &nbsp;|&nbsp; ');
+    el.innerHTML = `<b>Fotografías:</b> Wikimedia Commons — ${l}`;
+  }).catch(()=>{ el.innerHTML=''; });
+}
+/* hitos como tarjetas, con subtítulo guía de qué encuentra en cada una */
 function pintarHitos(sel){
-  const g = arr(D.hitosGrupos);
-  $(sel).innerHTML = `
-    <div class="hitos-cab"><b>${esc(D.hitosIntro||'')}</b></div>
-    <div class="hitos-lista">
-      ${g.map((gr,gi)=>`
-        <div class="hg anim" style="--d:${gi*45}ms;--c:${gr.color}">
-          <div class="hg-tit"><span>${gr.emoji}</span>${esc(gr.titulo)}</div>
-          ${gr.items.map(it=>`<div class="hg-it">
-            <span class="hg-c">${esc(it.c)}</span>
-            <span class="hg-u">${esc(it.u)}</span>
-            <span class="hg-t">${esc(it.t)}</span></div>`).join('')}
-        </div>`).join('')}
-    </div>
-    <div class="mapa-pie">Fuente: ${esc(D.hitosFuente||'')}</div>`;
+  $(sel).innerHTML = arr(D.hitosGrupos).map((gr,gi)=>`
+    <div class="ht anim" style="--d:${gi*50}ms;--c:${gr.color}">
+      <div class="ht-cab"><span class="ht-emo">${gr.emoji}</span>
+        <div><h4>${esc(gr.titulo)}</h4><small>${esc(gr.guia||'')}</small></div></div>
+      ${gr.items.map(it=>`<div class="ht-it">
+        <div class="ht-c">${esc(it.c)} <span class="ht-u">${esc(it.u)}</span></div>
+        <div class="ht-t">${esc(it.t)}</div></div>`).join('')}
+    </div>`).join('');
 }
 
 /* ---------- mapa de territorialidades ---------- */
@@ -288,7 +289,7 @@ function fichaAlerta(r){
 }
 
 /* ================= drill-down ================= */
-const heroSujeto = () => `<div class="hero" style="background-image:url('img/${IMG[S.sujeto.k]||'campesinado'}.svg')">
+const heroSujeto = () => `<div class="hero" style="background-image:url('img/${IMG[S.sujeto.k]||'campesinado'}.jpg')">
     <div class="hero-txt"><span>${S.sujeto.emoji}</span><h2>${esc(S.sujeto.n)}</h2></div></div>`;
 function vDimensiones(){
   const cards = dimensionesDe(S.sujeto).map((dm,i)=>{
