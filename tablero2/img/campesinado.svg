@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 640" width="1920" height="640" preserveAspectRatio="xMidYMid slice">
+<defs><linearGradient id="gc" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#BBD9E8"/><stop offset="1" stop-color="#EBE3C8"/></linearGradient></defs>
+  <rect width="1920" height="640" fill="url(#gc)"/>
+  <circle cx="1560" cy="150" r="72" fill="#FFD166" opacity=".95"/>
+  <path d="M0 330 L240 214 L420 300 L600 196 L820 318 L980 250 L1180 330 L1400 240 L1650 322 L1920 250 L1920 640 L0 640Z" fill="#2F5D3A" opacity=".55"/>
+  <path d="M0 386 L260 300 L520 372 L760 296 L1020 380 L1300 310 L1560 384 L1920 320 L1920 640 L0 640Z" fill="#356B41"/>
+  <path d="M0 430 Q480 396 960 430 T1920 430 L1920 640 L0 640Z" fill="#6D8F3E"/>
+  <g opacity=".5" stroke="#4E6E2E" stroke-width="3" fill="none">
+    <path d="M-200 640 Q-40 520 140 470"/><path d="M-40 640 Q120 520 300 470"/><path d="M120 640 Q280 520 460 470"/><path d="M280 640 Q440 520 620 470"/><path d="M440 640 Q600 520 780 470"/><path d="M600 640 Q760 520 940 470"/><path d="M760 640 Q920 520 1100 470"/><path d="M920 640 Q1080 520 1260 470"/><path d="M1080 640 Q1240 520 1420 470"/><path d="M1240 640 Q1400 520 1580 470"/><path d="M1400 640 Q1560 520 1740 470"/><path d="M1560 640 Q1720 520 1900 470"/><path d="M1720 640 Q1880 520 2060 470"/><path d="M1880 640 Q2040 520 2220 470"/><path d="M2040 640 Q2200 520 2380 470"/>
+  </g>
+  <g fill="#8CAE4C">
+    <g transform="translate(40 524)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(114 561)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(188 544)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(262 527)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(336 564)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(410 547)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(484 530)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(558 567)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(632 550)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(706 533)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(780 570)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(854 553)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(928 536)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(1002 573)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(1076 556)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(1150 539)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(1224 576)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(1298 559)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(1372 542)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(1446 525)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(1520 562)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(1594 545)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(1668 528)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(1742 565)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(1816 548)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g><g transform="translate(1890 531)"><rect x="-2" y="-30" width="4" height="30" fill="#6B8B36"/>
+      <path d="M0 -30 q-16 -6 -20 -22 q18 2 20 22 M0 -30 q16 -6 20 -22 q-18 2 -20 22" /></g>
+  </g></svg>

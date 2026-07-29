@@ -205,3 +205,51 @@ main{max-width:1180px;margin:0 auto;padding:20px 22px 70px}
 .epi-det summary{font-size:11.5px;color:var(--vino2);cursor:pointer;margin-bottom:5px}
 .epi-det .epi{margin-bottom:7px}
 .sin-enlace{color:var(--gris2);font-style:italic}
+
+/* ============ v5.2: ilustraciones, pestañas de mapa, hitos, animaciones ============ */
+@keyframes subir{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes aparecer{from{opacity:0}to{opacity:1}}
+.anim{animation:subir .5s cubic-bezier(.22,.9,.3,1) both;animation-delay:var(--d,0ms)}
+@media(prefers-reduced-motion:reduce){ .anim{animation:none} }
+
+/* tarjeta de sujeto con ilustración */
+.card-suj{position:relative;overflow:hidden;padding:0;min-height:82px}
+.card-suj .csi{position:absolute;inset:0;background-size:cover;background-position:center 62%;
+  opacity:.9;transition:transform .5s cubic-bezier(.22,.9,.3,1),opacity .3s}
+.card-suj::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(100deg,rgba(255,255,255,.97) 0%,rgba(255,255,255,.9) 38%,rgba(255,255,255,.24) 78%,rgba(255,255,255,0) 100%)}
+.card-suj .txt,.card-suj .flecha{position:relative;z-index:2}
+.card-suj .txt{padding:15px 0 15px 17px}
+.card-suj .flecha{padding-right:16px}
+.card-suj:hover .csi{transform:scale(1.07)}
+
+/* hero con ilustración en los niveles internos */
+.hero{position:relative;height:150px;border-radius:16px;overflow:hidden;margin-bottom:16px;
+  background-size:cover;background-position:center 58%;box-shadow:var(--s2);animation:aparecer .5s both}
+.hero::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(94,11,16,.86) 0%,rgba(142,18,24,.6) 45%,rgba(142,18,24,.05) 100%)}
+.hero-txt{position:absolute;z-index:2;left:26px;bottom:20px;display:flex;align-items:center;gap:12px;color:#fff}
+.hero-txt span{font-size:32px}
+.hero-txt h2{font-size:26px;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+@media(max-width:640px){ .hero{height:110px} .hero-txt h2{font-size:19px} }
+
+/* pestañas del panel del mapa */
+.pest-mapa{display:flex;gap:0;border-bottom:1px solid var(--linea);background:#fbf7f7}
+.pest{flex:1;padding:13px 12px;font-size:13px;font-weight:600;color:var(--gris);
+  border-bottom:3px solid transparent;margin-bottom:-1px;transition:.14s}
+.pest:hover{color:var(--vino2);background:#fff}
+.pest.on{color:var(--vino);border-bottom-color:var(--rojo);background:#fff}
+.mapa-cab2{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 15px;font-size:12px;color:var(--gris);border-bottom:1px solid var(--linea)}
+
+/* hitos: hito + cifra, sin adornos */
+.hitos-cab{padding:13px 16px;font-size:12.5px;color:var(--gris);border-bottom:1px solid var(--linea);background:#fbfafa}
+.hitos-lista{max-height:66vh;overflow-y:auto;padding:12px 14px}
+.hg{border-left:3px solid var(--c);padding-left:12px;margin-bottom:16px;animation:subir .45s both;animation-delay:var(--d,0)}
+.hg-tit{font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--c);
+  display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.hg-it{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;padding:5px 0;border-bottom:1px dashed var(--linea)}
+.hg-it:last-child{border-bottom:0}
+.hg-c{font-size:19px;font-weight:800;color:var(--vino);line-height:1.1}
+.hg-u{font-size:12px;font-weight:600;color:var(--tinta)}
+.hg-t{font-size:12px;color:var(--gris);flex-basis:100%}

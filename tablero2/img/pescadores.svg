@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 640" width="1920" height="640" preserveAspectRatio="xMidYMid slice">
+<defs><linearGradient id="gp" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#CDEBF5"/><stop offset="1" stop-color="#EAF6E8"/></linearGradient></defs>
+  <rect width="1920" height="640" fill="url(#gp)"/>
+  <circle cx="1480" cy="160" r="70" fill="#FFD48A" opacity=".92"/>
+  <path d="M0 356 Q480 330 960 356 T1920 356 L1920 640 L0 640Z" fill="#1F6F86" opacity=".5"/>
+  <path d="M0 404 Q480 378 960 404 T1920 404 L1920 640 L0 640Z" fill="#155A70"/>
+  <g stroke="#8FD6E8" stroke-width="5" fill="none" opacity=".6">
+    <path d="M-80 462 q90 -20 180 0 t180 0"/><path d="M100 502 q90 -20 180 0 t180 0"/><path d="M280 542 q90 -20 180 0 t180 0"/><path d="M460 582 q90 -20 180 0 t180 0"/><path d="M640 462 q90 -20 180 0 t180 0"/><path d="M820 502 q90 -20 180 0 t180 0"/><path d="M1000 542 q90 -20 180 0 t180 0"/><path d="M1180 582 q90 -20 180 0 t180 0"/><path d="M1360 462 q90 -20 180 0 t180 0"/><path d="M1540 502 q90 -20 180 0 t180 0"/><path d="M1720 542 q90 -20 180 0 t180 0"/><path d="M1900 582 q90 -20 180 0 t180 0"/>
+  </g>
+  <g opacity=".28" stroke="#CFEFF7" stroke-width="2" fill="none">
+    <line x1="1150" y1="392" x2="1060" y2="612"/><line x1="1196" y1="392" x2="1106" y2="612"/><line x1="1242" y1="392" x2="1152" y2="612"/><line x1="1288" y1="392" x2="1198" y2="612"/><line x1="1334" y1="392" x2="1244" y2="612"/><line x1="1380" y1="392" x2="1290" y2="612"/><line x1="1426" y1="392" x2="1336" y2="612"/><line x1="1472" y1="392" x2="1382" y2="612"/><line x1="1518" y1="392" x2="1428" y2="612"/><line x1="1564" y1="392" x2="1474" y2="612"/><line x1="1610" y1="392" x2="1520" y2="612"/><line x1="1656" y1="392" x2="1566" y2="612"/><line x1="1702" y1="392" x2="1612" y2="612"/><line x1="1748" y1="392" x2="1658" y2="612"/>
+    <line x1="1080" y1="400" x2="1830" y2="400"/><line x1="1080" y1="432" x2="1830" y2="432"/><line x1="1080" y1="464" x2="1830" y2="464"/><line x1="1080" y1="496" x2="1830" y2="496"/><line x1="1080" y1="528" x2="1830" y2="528"/><line x1="1080" y1="560" x2="1830" y2="560"/><line x1="1080" y1="592" x2="1830" y2="592"/>
+  </g>
+  <g transform="translate(430 424)">
+    <path d="M-150 0 q150 62 300 0 q-24 44 -150 44 q-126 0 -150 -44Z" fill="#6B4A2F"/>
+    <rect x="-6" y="-116" width="9" height="116" fill="#4A3320"/>
+    <path d="M3 -112 L108 -18 L3 -18Z" fill="#F2EDE0" opacity=".92"/>
+  </g>
+  <g fill="#9FE0EF" opacity=".8">
+    <path d="M700 540 q22 -14 44 0 q-22 14 -44 0Z M744 540 l16 -10 v20Z"/><path d="M880 584 q22 -14 44 0 q-22 14 -44 0Z M924 584 l16 -10 v20Z"/><path d="M1010 532 q22 -14 44 0 q-22 14 -44 0Z M1054 532 l16 -10 v20Z"/>
+  </g></svg>

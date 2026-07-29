@@ -2,7 +2,9 @@
    drill-down Sujeto → Dimensión → Derecho → Instrumentos, y cápsula de alertas. */
 let D=null, G=null, T=null;
 const S = { nivel:'inicio', sujeto:null, dimension:null, derecho:null,
-            capa:'zrc', alFiltro:{nivel:'',derecho:'',sujeto:''}, zoom:null };
+            capa:'zrc', pestMapa:'terr', alFiltro:{nivel:'',derecho:'',sujeto:''}, zoom:null };
+const IMG = {campesinado:'campesinado', indigenas:'indigenas', afro:'afro',
+             pescadores:'pescadores', mujeres:'mujeres', jovenes:'jovenes'};
 
 const $  = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
@@ -56,23 +58,18 @@ function render(){ ruta();
 /* ================= INICIO: dos columnas ================= */
 function vInicio(){
   const al = alertasUtiles();
-  const cards = arr(D.sujetos).map(su=>{
+  const cards = arr(D.sujetos).map((su,i)=>{
     const n=instrumentos(su).length;
-    return `<button class="card-suj" data-suj="${su.k}"><span class="emoji">${su.emoji}</span>
+    return `<button class="card-suj anim" style="--d:${i*55}ms" data-suj="${su.k}">
+      <span class="csi" style="background-image:url('img/${IMG[su.k]||'campesinado'}.svg')"></span>
       <span class="txt"><b>${esc(su.n)}</b><small>${n} instrumento${n!==1?'s':''}</small></span>
       <span class="flecha">→</span></button>`;
   }).join('');
-  const hitos = arr(D.hitos).map(h=>`<div class="hito">
-      <h4>${h.emoji||''} ${esc(h.titulo)}</h4>
-      ${h.cifras?h.cifras.map(c=>`<div><span class="cifra">${esc(c.v)}</span> <span class="u">${esc(c.u)}</span></div>`).join(''):''}
-      ${h.lista?`<ul>${h.lista.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
-      ${h.extra?`<div class="u"><b>${esc(h.extra)}</b></div>`:''}
-      <div class="fuente">Fuente: ${esc(h.fuente)}</div></div>`).join('');
 
   $('#app').innerHTML = `
    <div class="inicio2">
      <div class="col-izq">
-       <button class="btn-alertas" id="btnAl">
+       <button class="btn-alertas anim" id="btnAl">
          <span class="ba-ico">🚨</span>
          <span class="ba-txt"><b>Alertas del territorio</b>
            <small>${al.total} registradas · ${al.conPorque} con explicación</small></span>
@@ -82,27 +79,52 @@ function vInicio(){
 
        <div class="seccion-tit">Sujetos populares del campo</div>
        <div class="lista-suj">${cards}</div>
-
-       <div class="seccion-tit">Hitos de la reforma agraria</div>
-       <div class="hitos">${hitos}</div>
      </div>
 
      <div class="col-der">
-       <div class="mapa-panel">
-         <div class="mapa-cab">
-           <h3>🗺️ Territorialidades y seguridad alimentaria</h3>
-           <button class="ver-todo" id="verTerr">Ver detalle →</button>
+       <div class="mapa-panel anim">
+         <div class="pest-mapa">
+           <button class="pest ${S.pestMapa==='terr'?'on':''}" data-p="terr">🗺️ Territorialidades y APPA</button>
+           <button class="pest ${S.pestMapa==='hitos'?'on':''}" data-p="hitos">📊 Gestión de tierra</button>
          </div>
-         <div class="capas" id="capas"></div>
-         <div class="mapa-caja" id="mapaBox"></div>
-         <div class="mapa-pie" id="mapaPie"></div>
+         <div id="cuerpoMapa"></div>
        </div>
      </div>
    </div>`;
   $$('#app .card-suj').forEach(b=>b.onclick=()=>{ S.sujeto=D.sujetos.find(x=>x.k===b.dataset.suj); ir('dimensiones'); });
   $('#btnAl').onclick=()=>ir('alertas');
+  $$('#app .pest').forEach(b=>b.onclick=()=>{ S.pestMapa=b.dataset.p;
+    $$('#app .pest').forEach(x=>x.classList.toggle('on',x===b)); cuerpoMapa(); });
+  cuerpoMapa();
+}
+/* pestañas del panel derecho */
+function cuerpoMapa(){
+  if(S.pestMapa==='hitos'){ pintarHitos('#cuerpoMapa'); return; }
+  $('#cuerpoMapa').innerHTML = `
+    <div class="mapa-cab2"><span>Elija una capa; pase el cursor sobre el mapa.</span>
+      <button class="ver-todo" id="verTerr">Ver detalle →</button></div>
+    <div class="capas" id="capas"></div>
+    <div class="mapa-caja" id="mapaBox"></div>
+    <div class="mapa-pie" id="mapaPie"></div>`;
   $('#verTerr').onclick=()=>ir('territorialidades');
   pintarCapas('#capas'); pintarMapa('#mapaBox','#mapaPie');
+}
+/* pestaña 2: hitos concretos (hito + cifra) */
+function pintarHitos(sel){
+  const g = arr(D.hitosGrupos);
+  $(sel).innerHTML = `
+    <div class="hitos-cab"><b>${esc(D.hitosIntro||'')}</b></div>
+    <div class="hitos-lista">
+      ${g.map((gr,gi)=>`
+        <div class="hg anim" style="--d:${gi*45}ms;--c:${gr.color}">
+          <div class="hg-tit"><span>${gr.emoji}</span>${esc(gr.titulo)}</div>
+          ${gr.items.map(it=>`<div class="hg-it">
+            <span class="hg-c">${esc(it.c)}</span>
+            <span class="hg-u">${esc(it.u)}</span>
+            <span class="hg-t">${esc(it.t)}</span></div>`).join('')}
+        </div>`).join('')}
+    </div>
+    <div class="mapa-pie">Fuente: ${esc(D.hitosFuente||'')}</div>`;
 }
 
 /* ---------- mapa de territorialidades ---------- */
@@ -266,25 +288,29 @@ function fichaAlerta(r){
 }
 
 /* ================= drill-down ================= */
+const heroSujeto = () => `<div class="hero" style="background-image:url('img/${IMG[S.sujeto.k]||'campesinado'}.svg')">
+    <div class="hero-txt"><span>${S.sujeto.emoji}</span><h2>${esc(S.sujeto.n)}</h2></div></div>`;
 function vDimensiones(){
-  const cards = dimensionesDe(S.sujeto).map(dm=>{
+  const cards = dimensionesDe(S.sujeto).map((dm,i)=>{
     const n=instrumentos(S.sujeto,dm).length; if(!n) return '';
-    return `<button class="card-nav" data-dim="${dm.k}"><span class="emoji">${dm.emoji}</span>
+    return `<button class="card-nav anim" style="--d:${i*60}ms" data-dim="${dm.k}"><span class="emoji">${dm.emoji}</span>
       <h3>${esc(dm.n)}</h3><span class="cuenta">${n} instrumento${n!==1?'s':''}</span>
       <span class="flecha">→</span></button>`;
   }).join('');
-  $('#app').innerHTML=`<p class="intro">Dimensiones de <b>${esc(S.sujeto.n)}</b>. Elija una para ver los derechos.</p>
+  $('#app').innerHTML=`${heroSujeto()}
+    <p class="intro">Elija una dimensión para ver los derechos.</p>
     <div class="rej dim">${cards||'<p class="vacio">Sin instrumentos.</p>'}</div>`;
   $$('#app .card-nav').forEach(b=>b.onclick=()=>{ S.dimension=D.dimensiones.find(x=>x.k===b.dataset.dim); ir('derechos'); });
 }
 function vDerechos(){
-  const cards = arr(D.derechos).map(de=>{
+  const cards = arr(D.derechos).map((de,i)=>{
     const n=instrumentos(S.sujeto,S.dimension,de).length; if(!n) return '';
-    return `<button class="card-nav" data-der="${de.k}"><h3>${esc(de.n)}</h3>
+    return `<button class="card-nav anim" style="--d:${i*55}ms" data-der="${de.k}"><h3>${esc(de.n)}</h3>
       <span class="desc">${esc(de.sub)}</span><span class="cuenta">${n} instrumento${n!==1?'s':''}</span>
       <span class="flecha">→</span></button>`;
   }).join('');
-  $('#app').innerHTML=`<p class="intro"><b>${esc(S.sujeto.n)}</b> › <b>${esc(S.dimension.n)}</b></p>
+  $('#app').innerHTML=`${heroSujeto()}
+    <p class="intro">Dimensión <b>${esc(S.dimension.n)}</b>. Derechos con instrumentos:</p>
     <div class="rej der">${cards||'<p class="vacio">Sin derechos con instrumentos.</p>'}</div>`;
   $$('#app .card-nav').forEach(b=>b.onclick=()=>{ S.derecho=D.derechos.find(x=>x.k===b.dataset.der); ir('herramienta'); });
 }

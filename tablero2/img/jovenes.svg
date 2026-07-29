@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 640" width="1920" height="640" preserveAspectRatio="xMidYMid slice">
+<defs><linearGradient id="gj" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFF0C9"/><stop offset="1" stop-color="#D6EAC4"/></linearGradient></defs>
+  <rect width="1920" height="640" fill="url(#gj)"/>
+  <circle cx="960" cy="330" r="150" fill="#FFE59B" opacity=".55"/>
+  <circle cx="960" cy="330" r="86" fill="#FFCB5C"/>
+  <path d="M0 404 L280 300 L560 386 L860 286 L1160 396 L1440 300 L1720 388 L1920 330 L1920 640 L0 640Z" fill="#3D6B3F" opacity=".5"/>
+  <path d="M0 458 Q480 414 960 460 T1920 448 L1920 640 L0 640Z" fill="#4C7A3C"/>
+  <g transform="translate(960 470)">
+    <path d="M0 0 V-150" stroke="#3E6B2E" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M0 -92 q-90 -30 -116 -110 q98 8 116 110Z" fill="#79B547"/>
+    <path d="M0 -122 q90 -30 116 -110 q-98 8 -116 110Z" fill="#8FC85B"/>
+  </g>
+  <g fill="#8FC85B" opacity=".75">
+    <g transform="translate(60 560) scale(.42)">
+        <path d="M0 0 V-90" stroke="#4E7A34" stroke-width="9" fill="none"/>
+        <path d="M0 -52 q-58 -18 -74 -70 q62 6 74 70Z"/></g><g transform="translate(184 601) scale(.42)">
+        <path d="M0 0 V-90" stroke="#4E7A34" stroke-width="9" fill="none"/>
+        <path d="M0 -52 q-58 -18 -74 -70 q62 6 74 70Z"/></g><g transform="translate(308 586) scale(.42)">
+        <path d="M0 0 V-90" stroke="#4E7A34" stroke-width="9" fill="none"/>
+        <path d="M0 -52 q-58 -18 -74 -70 q62 6 74 70Z"/></g><g transform="translate(432 571) scale(.42)">
+        <path d="M0 0 V-90" stroke="#4E7A34" stroke-width="9" fill="none"/>
+        <path d="M0 -52 q-58 -18 -74 -70 q62 6 74 70Z"/></g><g transform="translate(556 612) scale(.42)">
+        <path d="M0 0 V-90" stroke="#4E7A34" stroke-width="9" fill="none"/>
+        <path d="M0 -52 q-58 -18 -74 -70 q62 6 74 70Z"/></g><g transform="translate(680 597) scale(.42)">
+        <path d="M0 0 V-90" stroke="#4E7A34" stroke-width="9" fill="none"/>
+        <path d="M0 -52 q-58 -18 -74 -70 q62 6 74 70Z"/></g><g transform="translate(804 582) scale(.42)">
+        <path d="M0 0 V-90" stroke="#4E7A34" stroke-width="9" fill="none"/>
+        <path d="M0 -52 q-58 -18 -74 -70 q62 6 74 70Z"/></g><g transform="translate(928 567) scale(.42)">
+        <path d="M0 0 V-90" stroke="#4E7A34" stroke-width="9" fill="none"/>
+        <path d="M0 -52 q-58 -18 -74 -70 q62 6 74 70Z"/></g><g transform="translate(1052 608) scale(.42)">
+        <path d="M0 0 V-90" stroke="#4E7A34" stroke-width="9" fill="none"/>
+        <path d="M0 -52 q-58 -18 -74 -70 q62 6 74 70Z"/></g><g transform="translate(1176 593) scale(.42)">
+        <path d="M0 0 V-90" stroke="#4E7A34" stroke-width="9" fill="none"/>
+        <path d="M0 -52 q-58 -18 -74 -70 q62 6 74 70Z"/></g><g transform="translate(1300 578) scale(.42)">
+        <path d="M0 0 V-90" stroke="#4E7A34" stroke-width="9" fill="none"/>
+        <path d="M0 -52 q-58 -18 -74 -70 q62 6 74 70Z"/></g><g transform="translate(1424 563) scale(.42)">
+        <path d="M0 0 V-90" stroke="#4E7A34" stroke-width="9" fill="none"/>
+        <path d="M0 -52 q-58 -18 -74 -70 q62 6 74 70Z"/></g><g transform="translate(1548 604) scale(.42)">
+        <path d="M0 0 V-90" stroke="#4E7A34" stroke-width="9" fill="none"/>
+        <path d="M0 -52 q-58 -18 -74 -70 q62 6 74 70Z"/></g><g transform="translate(1672 589) scale(.42)">
+        <path d="M0 0 V-90" stroke="#4E7A34" stroke-width="9" fill="none"/>
+        <path d="M0 -52 q-58 -18 -74 -70 q62 6 74 70Z"/></g><g transform="translate(1796 574) scale(.42)">
+        <path d="M0 0 V-90" stroke="#4E7A34" stroke-width="9" fill="none"/>
+        <path d="M0 -52 q-58 -18 -74 -70 q62 6 74 70Z"/></g><g transform="translate(1920 615) scale(.42)">
+        <path d="M0 0 V-90" stroke="#4E7A34" stroke-width="9" fill="none"/>
+        <path d="M0 -52 q-58 -18 -74 -70 q62 6 74 70Z"/></g>
+  </g></svg>
