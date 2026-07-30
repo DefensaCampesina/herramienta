@@ -48,6 +48,7 @@ function ruta(){
   const m=[{t:'Inicio',on:()=>ir('inicio',{sujeto:null,dimension:null,derecho:null})}];
   if(S.nivel==='alertas') m.push({t:'Alertas',on:()=>{}});
   if(S.nivel==='territorialidades') m.push({t:'Territorialidades',on:()=>{}});
+  if(S.nivel==='guia') m.push({t:'Guía de palabras',on:()=>{}});
   if(S.sujeto) m.push({t:S.sujeto.n,on:()=>ir('dimensiones',{dimension:null,derecho:null})});
   if(S.dimension) m.push({t:nombreDim(S.dimension,S.sujeto),on:()=>ir('derechos',{derecho:null})});
   if(S.derecho) m.push({t:S.derecho.n,on:()=>{}});
@@ -57,8 +58,43 @@ function ruta(){
   $$('#ruta .mig').forEach(b=>b.onclick=()=>m[+b.dataset.i].on());
 }
 function render(){ ruta();
-  ({inicio:vInicio,alertas:vAlertas,territorialidades:vTerritorialidades,
-    dimensiones:vDimensiones,derechos:vDerechos,herramienta:vHerramienta}[S.nivel]||vInicio)(); }
+  ({inicio:vInicio,alertas:vAlertas,territorialidades:vTerritorialidades,guia:vGuia,
+    dimensiones:vDimensiones,derechos:vDerechos,herramienta:vHerramienta}[S.nivel]||vInicio)();
+  bristol(); }
+
+/* ================= GUÍA: qué significa cada palabra ================= */
+function vGuia(){
+  const g = arr(D.guia);
+  $('#app').innerHTML = `
+    <div class="guia-cab">
+      <h2>📖 ¿Qué quiere decir cada palabra?</h2>
+      <p>Aquí explicamos, en palabras sencillas, las figuras que aparecen en el tablero:
+        qué son, para qué sirven y qué norma las respalda. Toque una tarjeta para desplegarla.</p>
+      <input id="gBuscar" class="g-buscar" placeholder="Buscar: ZRC, resguardo, baldío…">
+    </div>
+    <div class="guia-rej" id="guiaRej"></div>`;
+  const pintar = (txt='') => {
+    const t = noAc(txt);
+    const vis = g.filter(f => !t || noAc(f.nombre+' '+f.quees+' '+f.clave).includes(t));
+    $('#guiaRej').innerHTML = vis.length ? vis.map((f,i)=>`
+      <details class="gf anim" style="--d:${i*35}ms">
+        <summary><span class="gf-emo">${f.emoji}</span>
+          <span class="gf-n">${esc(f.nombre)}</span><span class="gf-mas">+</span></summary>
+        <div class="gf-cuerpo">
+          <div class="gf-b"><label>¿Qué es?</label><p>${esc(f.quees)}</p></div>
+          <div class="gf-b"><label>¿Para qué sirve?</label><p>${esc(f.paraque)}</p></div>
+          ${f.ojo?`<div class="gf-ojo"><b>Ojo:</b> ${esc(f.ojo)}</div>`:''}
+          ${f.ejemplo?`<div class="gf-b"><label>Un ejemplo</label><p>${esc(f.ejemplo)}</p></div>`:''}
+          <div class="gf-pie">
+            <div><b>Norma:</b> ${esc(f.norma)}</div>
+            ${f.quien?`<div><b>Quién lo tramita:</b> ${esc(f.quien)}</div>`:''}
+          </div>
+        </div>
+      </details>`).join('') : '<p class="vacio">No encontramos esa palabra. Pruebe con otra.</p>';
+  };
+  pintar();
+  $('#gBuscar').oninput = e => pintar(e.target.value);
+}
 
 /* ================= INICIO: dos columnas ================= */
 function vInicio(){
@@ -80,6 +116,13 @@ function vInicio(){
            <small>${al.total} registradas · ${al.conPorque} con explicación</small></span>
          <span class="ba-pts">${['rojo','naranja','gris','verde'].map(n=>
            al.porNivel[n]?`<i class="pt ${n}" title="${n}">${al.porNivel[n]}</i>`:'').join('')}</span>
+       </button>
+
+       <button class="btn-guia anim" id="btnGuia">
+         <span class="bg-ico">📖</span>
+         <span class="bg-txt"><b>¿Qué quiere decir cada palabra?</b>
+           <small>ZRC, TECAM, APPA, resguardo, baldío… explicado sencillo</small></span>
+         <span class="flecha">→</span>
        </button>
 
        <div class="seccion-tit">Sujetos populares del campo</div>
@@ -105,6 +148,7 @@ function vInicio(){
 
   $$('#app .card-suj').forEach(b=>b.onclick=()=>{ S.sujeto=D.sujetos.find(x=>x.k===b.dataset.suj); ir('dimensiones'); });
   $('#btnAl').onclick=()=>ir('alertas');
+  $('#btnGuia').onclick=()=>ir('guia');
   $$('#app .pest').forEach(b=>b.onclick=()=>{ S.pestMapa=b.dataset.p;
     $$('#app .pest').forEach(x=>x.classList.toggle('on',x===b)); cuerpoMapa(); });
   cuerpoMapa();
@@ -583,4 +627,120 @@ function fichaInstrumento(it){
       ${enlaceOk?`<a href="${esc(it.enlace)}" target="_blank" rel="noopener">abrir la norma ↗</a>`
                 :`<span class="sin-enlace">sin enlace en la fuente oficial</span>`}</div>
   </div>`;
+}
+
+/* ================= BOT BRISTOL =================
+   Asistente de la casa, sin conexión a ningún modelo: responde con lo que hay
+   en el propio tablero (guía, hitos, sujetos, derechos, territorialidades). */
+let bristolListo = false;
+function bristol(){
+  if(bristolListo) return; bristolListo = true;
+  const cont = document.createElement('div');
+  cont.innerHTML = `
+    <button id="brBtn" class="br-btn" title="Bot Bristol: le ayudo a moverse por el tablero">
+      <img src="img/bristol_av.jpg" alt="Bot Bristol">
+      <span class="br-globo">¿Le ayudo?</span>
+    </button>
+    <div id="brPanel" class="br-panel oculto">
+      <div class="br-cab">
+        <img src="img/bristol_av.jpg" alt="">
+        <div><b>Bot Bristol</b><small>Le ayudo a entender y a moverse por aquí</small></div>
+        <button id="brX" title="Cerrar">✕</button>
+      </div>
+      <div class="br-chat" id="brChat"></div>
+      <div class="br-sugs" id="brSugs"></div>
+    </div>`;
+  document.body.appendChild(cont);
+  const $c = () => $('#brChat');
+  const decir = (quien, html) => {
+    const d = document.createElement('div');
+    d.className = 'br-msg ' + quien; d.innerHTML = html;
+    $c().appendChild(d); $c().scrollTop = $c().scrollHeight;
+  };
+  const sugerir = lista => {
+    $('#brSugs').innerHTML = lista.map((s,i)=>`<button class="br-s" data-i="${i}">${esc(s.t)}</button>`).join('');
+    $$('#brSugs .br-s').forEach(b=>b.onclick=()=>{
+      const s = lista[+b.dataset.i];
+      decir('yo', esc(s.t));
+      setTimeout(()=>s.on(), 220);
+    });
+  };
+  const menu = () => sugerir([
+    {t:'¿Qué es esta página?', on:()=>{ decir('bot',
+      'Es una herramienta para <b>seguirle la pista a la reforma agraria</b>. Puede mirarla de dos maneras:<br><br>' +
+      '• Por <b>sujeto</b>: campesinado, pueblos indígenas, comunidades negras, pueblo Rrom, pescadores, mujeres y jóvenes. ' +
+      'Entra a uno y va bajando: dimensión → derecho → las normas que lo respaldan.<br>' +
+      '• Por <b>territorio</b>: el mapa de la derecha, con las territorialidades y la gestión de tierras.'); menu(); }},
+    {t:'No entiendo una palabra', on:()=>{
+      decir('bot','Le explico cualquiera de estas. Toque la que quiera:');
+      sugerir(arr(D.guia).map(f=>({t:f.emoji+' '+f.nombre.replace(/\s*\(.*?\)\s*/,''), on:()=>{
+        decir('bot', `<b>${esc(f.nombre)}</b><br><br>${esc(f.quees)}<br><br>` +
+          `<b>¿Para qué sirve?</b><br>${esc(f.paraque)}<br><br>` +
+          (f.ojo?`<i>Ojo: ${esc(f.ojo)}</i><br><br>`:'') +
+          `<small>Norma: ${esc(f.norma)}</small>`);
+        sugerir([{t:'Ver la guía completa', on:()=>{ ir('guia'); cerrar(); }},
+                 {t:'Otra palabra', on:()=>menu()}]);
+      }})).concat([{t:'← Volver', on:()=>menu()}]));
+    }},
+    {t:'¿Cuánta tierra se entregó?', on:()=>{
+      const g = arr(D.hitosGrupos).find(x=>x.k==='tierra');
+      decir('bot', g ? '<b>Tierra para las comunidades</b><br><br>' +
+        g.items.map(i=>`• <b>${esc(i.c)}</b> ${esc(i.u)}: ${esc(i.t)}`).join('<br>') +
+        `<br><br><small>${esc(D.hitosFuente||'')}</small>`
+        : 'Todavía no tengo esa cifra cargada.');
+      sugerir([{t:'Ver el mapa de tierras', on:()=>{ S.pestMapa='fondo'; ir('inicio'); cerrar(); }},
+               {t:'← Volver', on:()=>menu()}]);
+    }},
+    {t:'¿Qué territorialidades hay?', on:()=>{
+      const t = Object.values(T||{});
+      decir('bot', t.length ? 'En el mapa puede prender y apagar estas capas:<br><br>' +
+        t.map(c=>`• <b>${esc(c.nombre)}</b>: ${c.tipo==='municipios'? c.n+' municipios' : num(c.n)}`).join('<br>')
+        : 'El mapa todavía está cargando.');
+      sugerir([{t:'Ver el mapa', on:()=>{ S.pestMapa='terr'; ir('inicio'); cerrar(); }},
+               {t:'← Volver', on:()=>menu()}]);
+    }},
+    {t:'Buscar una norma', on:()=>{
+      decir('bot','Escriba una palabra (por ejemplo: <i>semillas</i>, <i>crédito</i>, <i>mujeres</i>) y le muestro las normas que la mencionan.');
+      $('#brSugs').innerHTML = `<div class="br-busca"><input id="brQ" placeholder="Escriba aquí…"><button id="brGo">Buscar</button></div>
+        <button class="br-s" id="brVolver">← Volver</button>`;
+      const buscar = () => {
+        const q = noAc($('#brQ').value.trim());
+        if(q.length < 3){ decir('bot','Escriba al menos 3 letras.'); return; }
+        decir('yo', esc($('#brQ').value));
+        const hits = arr(D.instrumentos).filter(i=>
+          noAc(i.descripcion + ' ' + i.epigrafe + ' ' + i.derechos.join(' ')).includes(q)).slice(0,6);
+        decir('bot', hits.length
+          ? `Encontré <b>${hits.length}</b> ${hits.length===1?'norma':'normas'}:<br><br>` + hits.map(i=>
+              `• <b>${esc(i.tipo)} ${esc(i.numero)}</b>${i.fecha?' ('+esc(i.fecha.slice(0,4))+')':''}<br>` +
+              `<small>${esc(i.descripcion||i.epigrafe.slice(0,90))}</small>` +
+              (/^https?:/.test(i.enlace)?`<br><a href="${esc(i.enlace)}" target="_blank" rel="noopener">abrir la norma ↗</a>`:'')
+            ).join('<br><br>')
+          : 'No encontré nada con esa palabra. Pruebe con otra.');
+      };
+      $('#brGo').onclick = buscar;
+      $('#brQ').onkeydown = e => { if(e.key==='Enter') buscar(); };
+      $('#brVolver').onclick = () => menu();
+      setTimeout(()=>$('#brQ') && $('#brQ').focus(), 120);
+    }},
+    {t:'¿Y las alertas?', on:()=>{
+      const a = alertasUtiles();
+      decir('bot', `Hay <b>${a.total} alertas</b> marcadas por las dependencias, pero solo <b>${a.conPorque}</b> explican el motivo.<br><br>` +
+        Object.entries(a.porNivel).map(([k,v])=>`• ${esc((NIV[k]||[k])[0])}: <b>${v}</b>`).join('<br>') +
+        '<br><br>Una alerta sin explicación no se puede atender: hay que pedirle a la dependencia el porqué.');
+      sugerir([{t:'Ver las alertas', on:()=>{ ir('alertas'); cerrar(); }},
+               {t:'← Volver', on:()=>menu()}]);
+    }},
+  ]);
+  const abrir = () => {
+    $('#brPanel').classList.remove('oculto');
+    $('#brBtn').classList.add('activo');
+    if(!$c().children.length){
+      decir('bot','Buenas. Soy el <b>Bot Bristol</b>. Como el almanaque, estoy para orientar: ' +
+        'le explico las palabras difíciles y le muestro dónde está cada cosa.<br><br>¿En qué le ayudo?');
+      menu();
+    }
+  };
+  const cerrar = () => { $('#brPanel').classList.add('oculto'); $('#brBtn').classList.remove('activo'); };
+  $('#brBtn').onclick = () => $('#brPanel').classList.contains('oculto') ? abrir() : cerrar();
+  $('#brX').onclick = cerrar;
 }

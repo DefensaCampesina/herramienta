@@ -30,10 +30,10 @@
   "url": "https://commons.wikimedia.org/wiki/File:02SantaFedeAntioquia26122017.jpg"
  },
  "jovenes": {
-  "titulo": "Fincas cafeteras - Sierra Nevada - panoramio.jpg",
-  "autor": "diego_cue",
-  "licencia": "CC BY-SA 3.0",
-  "url": "https://commons.wikimedia.org/wiki/File:Fincas%20cafeteras%20-%20Sierra%20Nevada%20-%20panoramio.jpg"
+  "titulo": "Uniminuto 2024 jun biblio.jpg",
+  "autor": "Biblioteca integrando huellas",
+  "licencia": "CC BY-SA 4.0",
+  "url": "https://commons.wikimedia.org/wiki/File:Uniminuto%202024%20jun%20biblio.jpg"
  },
  "rrom": {
   "titulo": "Ciganos (8576050534).jpg",
@@ -46,5 +46,11 @@
   "autor": "Josefordonez",
   "licencia": "CC BY-SA 4.0",
   "url": "https://commons.wikimedia.org/wiki/File:Atardecer%20en%20el%20R%C3%ADo%20amamazonas%20Leticia%2CColombia.jpg"
+ },
+ "bristol": {
+  "titulo": "Almanaque de Bristol para Colomba año 1999 Museo Pedagógico Colombiano.jpg",
+  "autor": "MuseoPedagogicoUPN",
+  "licencia": "CC BY-SA 4.0",
+  "url": "https://commons.wikimedia.org/wiki/File%3AAlmanaque%20de%20Bristol%20para%20Colomba%20a%C3%B1o%201999%20Museo%20Pedag%C3%B3gico%20Colombiano.jpg"
  }
 }
