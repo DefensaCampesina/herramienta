@@ -742,5 +742,11 @@ function bristol(){
   };
   const cerrar = () => { $('#brPanel').classList.add('oculto'); $('#brBtn').classList.remove('activo'); };
   $('#brBtn').onclick = () => $('#brPanel').classList.contains('oculto') ? abrir() : cerrar();
-  $('#brX').onclick = cerrar;
+  $('#brX').onclick = e => { e.stopPropagation(); cerrar(); };
+  // cerrar con Escape o tocando por fuera del panel
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') cerrar(); });
+  document.addEventListener('click', e => {
+    if($('#brPanel').classList.contains('oculto')) return;
+    if(!e.target.closest('#brPanel') && !e.target.closest('#brBtn')) cerrar();
+  });
 }
